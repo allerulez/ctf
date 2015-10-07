@@ -206,7 +206,7 @@ class Tank(GamePhysicsObject):
   def try_grab_flag(self, flag):
     # Check that the flag is not on other tank
     if(not flag.is_on_tank):
-      #  Check if the tank is closed to the flag
+      #  Check if the tank is close to the flag
       flag_pos = pymunk.Vec2d(flag.x, flag.y)
       if((flag_pos - self.body.position).length < 0.5):
         # Grab the flag !

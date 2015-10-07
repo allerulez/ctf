@@ -121,6 +121,7 @@ class SimpleAi(Ai):
     self.backingout         = 0
     self.should_turn        = False
   def decide(self):
+    """
     if(self.last_shot == 0):
       self.last_shot = 20
       # Check if we should shoot
@@ -138,7 +139,7 @@ class SimpleAi(Ai):
           self.tank.shoot()
     
     self.last_shot -= 1
-    
+    """
     # Test if the tank is blocked
     
     if( (self.last_position - self.tank.body.position).get_length() < 0.01 and math.cos(self.tank.body.angle - self.last_angle) > 0.995 ):

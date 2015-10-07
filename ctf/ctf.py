@@ -51,6 +51,24 @@ for x in range(0, current_map.width):
 		# into the "background" image at the coordinates given as the secnod argument
 		background.blit(images.grass, (x*images.TILE_SIZE, y*images.TILE_SIZE))
 
+base1 = gameobjects.GameVisibleObject(0.5, 0.5, images.bases[0])
+base2 = gameobjects.GameVisibleObject(current_map.width - 0.5, 0.5, images.bases[1])
+base3 = gameobjects.GameVisibleObject(0.5, current_map.height - 0.5, images.bases[2])
+base4 = gameobjects.GameVisibleObject(current_map.width - 0.5, current_map.height - 0.5, images.bases[3])
+
+game_objects_list.append(base1)
+game_objects_list.append(base2)
+game_objects_list.append(base3)
+game_objects_list.append(base4)
+
+#	Checks if tank is about to move outside the map
+def outside_map(tank):
+	if tank.body.position[0] == current_map.width or tank.body.position[0] == 0:
+		return True
+	elif tank.body.position[1] == current_map.height or tank.body.position[1] == 0:
+		return True
+	else:
+		return False
 
 #   The initial position and type of the boxes is contained in the "current_map.boxes" array,
 #   which is an array that has the size of the map, and whose cells contain the box type
@@ -73,10 +91,8 @@ for x in range(0, current_map.width):
 			box = gameobjects.Box(x + 0.5, y + 0.5, box_model, space)
 			game_objects_list.append(box)
 game_objects_def_pos_list = list(game_objects_list)
-
+ais = []
 def default_pos(tile):
-#	x = game_objects_def_pos_list[tile][0]
-#	y = game_objects_def_pos_list[tile][1]
 	return tile in game_objects_def_pos_list
 
 
@@ -92,12 +108,24 @@ for i in range(0, len(current_map.start_positions)):
 	game_objects_list.append(tank)
 	# Add the tank to the list of tanks
 	tanks_list.append(tank)
+	# Add the bases gameobjects
 
+	#Add AI
+	if i > 0:
+		ais.append(ai.SimpleAi(tanks_list[i], game_objects_list, tanks_list, space))
+	
 
-
+"""
+pm.Segment(, (-1,-1),(-1, current_map.height+1), 1)
+pm.Segment(, (-1,-1),(current_map.width+1, -1), 1)
+pm.Segment(, (current_map.width+1, current_map.height+1), (current_map.width+1, -1), 1)
+pm.Segment(, (current_map.width+1, current_map.height+1), (-1, current_map.height+1), 1)
+"""
 # This function call create a new flag object at coordinates x, y
 flag = gameobjects.Flag(current_map.width/2, current_map.height/2)
 game_objects_list.append(flag)
+
+
 
 #----- Main Loop -----#
 
@@ -143,6 +171,17 @@ while running:
 	
 	#   Check collisions and update the objects position
 	space.step(1 / framerate)
+
+	for i in range(len(tanks_list)):
+		if outside_map(tanks_list[i]):
+			gameobjects.Tank.stop_moving(tanks_list[i])
+		gameobjects.Tank.try_grab_flag(tanks_list[i], flag)
+		if gameobjects.Tank.has_won(tanks_list[i]): #and flag.is_on_tank:
+			running = False
+		if i < 3:
+			ai.SimpleAi.decide(ais[i])
+
+
 
 	#   Update object that depends on an other object position (for instance a flag)
 	for obj in game_objects_list:
