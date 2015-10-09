@@ -145,13 +145,13 @@ class Tank(GamePhysicsObject):
     # This variable is used to access the flag object, if the current tank is carrying the flag
     self.flag                 = None
     # Impose a maximum speed to the tank
-    self.maximum_speed        = 1.0
+    self.maximum_speed        = 3.0
     # Define the start position, which is also the position where the tank has to return with the flag
     self.start_position       = pymunk.Vec2d(x, y)
   
   # Call this function to accelerate forward the tank
   def accelerate(self):
-    self.acceleration = 0.1
+    self.acceleration = 1.5
   
   # Call this function to accelerate backward the tank
   def decelerate(self):

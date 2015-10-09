@@ -61,14 +61,18 @@ game_objects_list.append(base2)
 game_objects_list.append(base3)
 game_objects_list.append(base4)
 
-#	Checks if tank is about to move outside the map
-def outside_map(tank):
-	if tank.body.position[0] == current_map.width or tank.body.position[0] == 0:
-		return True
-	elif tank.body.position[1] == current_map.height or tank.body.position[1] == 0:
-		return True
-	else:
-		return False
+# --- Fence around the map START ---
+nw_box = pm.Body()
+se_box = pm.Body()
+
+north_seg = pm.Segment(nw_box,  (-0.5, -0.5), (current_map.width + 0.5, -0.5), 0.5)
+east_seg = pm.Segment(se_box, (current_map.width + 0.5, current_map.height + 0.5),(current_map.width + 0.5, -0.5), 0.5)
+south_seg = pm.Segment(se_box,  (current_map.width + 0.5, current_map.height + 0.5),(-0.5 , current_map.height + 0.5), 0.5)
+west_seg = pm.Segment(nw_box,   (-0.5, -0.5), (-0.5, current_map.height + 0.5), 0.5)
+
+space.add(north_seg, east_seg, south_seg, west_seg)
+# --- Fence around the map END ---
+
 
 #   The initial position and type of the boxes is contained in the "current_map.boxes" array,
 #   which is an array that has the size of the map, and whose cells contain the box type
@@ -168,18 +172,16 @@ while running:
 		skip_update = 5
 	else:
 		skip_update -= 1
-	
+
 	#   Check collisions and update the objects position
 	space.step(1 / framerate)
 
 	for i in range(len(tanks_list)):
-		if outside_map(tanks_list[i]):
-			gameobjects.Tank.stop_moving(tanks_list[i])
-		gameobjects.Tank.try_grab_flag(tanks_list[i], flag)
-		if gameobjects.Tank.has_won(tanks_list[i]): #and flag.is_on_tank:
-			running = False
-		if i < 3:
-			ai.SimpleAi.decide(ais[i])
+                gameobjects.Tank.try_grab_flag(tanks_list[i], flag)
+                if gameobjects.Tank.has_won(tanks_list[i]):
+                        running = False
+                if i < 3:
+                        ai.SimpleAi.decide(ais[i])
 
 
 
@@ -187,18 +189,15 @@ while running:
 	for obj in game_objects_list:
 	  obj.post_update()
 	#-- Update Display
-	
 
 	# Display the background on the screen
 	screen.blit(background,(0,0))
-	
 
 	# Update the game display of the game objects on the screen
 	for obj in game_objects_list:
 		# For each object, simply call the "update_screen" function
 		if default_pos(obj) != obj:
 			obj.update_screen(screen)
-	
 
 
 
