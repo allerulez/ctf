@@ -1,4 +1,5 @@
 import pygame
+import time	
 from pygame.locals import *
 from pygame.color import *
 import pymunk as pm
@@ -128,9 +129,15 @@ pm.Segment(, (current_map.width+1, current_map.height+1), (-1, current_map.heigh
 # This function call create a new flag object at coordinates x, y
 flag = gameobjects.Flag(current_map.width/2, current_map.height/2)
 game_objects_list.append(flag)
-
-
-
+"""
+def decelerate_until_stop(tank):
+	if tank.velocity > 0:
+		tank.acceleration = -0.5
+		if tank.velocity <= 0:
+			tank.stop_moving()
+	elif tank.velocity < 0:
+		tank.acceleration = 0.5
+		"""
 #----- Main Loop -----#
 
 #-- Control whether the game run
@@ -161,7 +168,9 @@ while running:
 			gameobjects.Tank.turn_right(tanks_list[0])
 		elif event.type == KEYUP and event.key == K_RIGHT:
 			gameobjects.Tank.stop_turning(tanks_list[0])
-		#gameobjects.Tank.stop_moving(tanks_list[0])
+		if event.type == KEYDOWN and event.key == K_RETURN:
+			gameobjects.Tank.shoot(tanks_list[0], space)
+		print(tank)
 
 	#-- Update physics
 	if(skip_update == 0):

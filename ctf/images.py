@@ -18,6 +18,9 @@ def load_image(file):
 # Define the default size of tiles
 TILE_SIZE = 40
 
+# Image of a missile
+missile = load_image('missile.png')
+
 # Image of an explosion
 explosion = load_image('explosion.png')
 

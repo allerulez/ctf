@@ -145,13 +145,13 @@ class Tank(GamePhysicsObject):
     # This variable is used to access the flag object, if the current tank is carrying the flag
     self.flag                 = None
     # Impose a maximum speed to the tank
-    self.maximum_speed        = 3.0
+    self.maximum_speed        = 1.0
     # Define the start position, which is also the position where the tank has to return with the flag
     self.start_position       = pymunk.Vec2d(x, y)
   
   # Call this function to accelerate forward the tank
   def accelerate(self):
-    self.acceleration = 1.5
+    self.acceleration = 0.1
   
   # Call this function to accelerate backward the tank
   def decelerate(self):
@@ -217,9 +217,13 @@ class Tank(GamePhysicsObject):
   def has_won(self):
     return self.flag != None and (self.start_position - self.body.position).length < 0.2
   # Call this function to shoot forward (current implementation does nothing ! you need to implement it yourself)
-  def shoot(self):
+  def shoot(self, space):
     self.stop_moving()
     self.stop_turning()
+    self.velocity = -1
+    missile = Missile(self, images.missile, space)
+
+
     return
 
 #
@@ -258,3 +262,15 @@ class Flag(GameVisibleObject):
     self.is_on_tank   = False
     GameVisibleObject.__init__(self, x, y,  images.flag)
 
+class Missile(GamePhysicsObject):
+  def __init__(self, tank, sprite, space):
+    GamePhysicsObject.__init__(self, tank.x, tank.y, tank.orientation, sprite, space, True)
+    # Define variable used to apply motion to the tanks
+    self.orientation          = tank.orientation
+    self.acceleration         = 0.0
+    self.velocity             = 2.0
+    self.angular_acceleration = 0.0
+    self.angular_velocity     = 0.0
+    # Define the start position, which is also the position where the tank has to return with the flag
+    self.start_position       = pymunk.Vec2d(tank.start_position[0], tank.start_position[1])
+ """ This is a nearly functional class, fix it next time """
