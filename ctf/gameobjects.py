@@ -142,6 +142,7 @@ class Tank(GamePhysicsObject):
     self.velocity             = 0.0
     self.angular_acceleration = 0.0
     self.angular_velocity     = 0.0
+    self.orientation = orientation
     # This variable is used to access the flag object, if the current tank is carrying the flag
     self.flag                 = None
     # Impose a maximum speed to the tank
@@ -218,13 +219,19 @@ class Tank(GamePhysicsObject):
     return self.flag != None and (self.start_position - self.body.position).length < 0.2
   # Call this function to shoot forward (current implementation does nothing ! you need to implement it yourself)
   def shoot(self, space):
-    self.stop_moving()
-    self.stop_turning()
-    self.velocity = -1
-    missile = Missile(self, images.missile, space)
-
-
-    return
+    #missile = Tank(self)
+    missile = Missile(self.body.position[0], self.body.position[1]+0.5, math.degrees(self.body.angle)+90, images.missile, space)
+    #self.stop_moving()
+    #self.stop_turning()
+    #self.velocity = -1    
+    missile.acceleration = 10
+    missile.update()
+    #missile.stop_turning()
+    #missile.acceleration = 0
+    #missile.velocity += 2.0
+    #missile.sprite = images.missile
+    return missile
+    """Fixa denna skit, den rör sig INTE"""
 
 #
 # This class extends the GamePhysicsObject to handle box objects.
@@ -263,14 +270,14 @@ class Flag(GameVisibleObject):
     GameVisibleObject.__init__(self, x, y,  images.flag)
 
 class Missile(GamePhysicsObject):
-  def __init__(self, tank, sprite, space):
-    GamePhysicsObject.__init__(self, tank.x, tank.y, tank.orientation, sprite, space, True)
-    # Define variable used to apply motion to the tanks
-    self.orientation          = tank.orientation
+  def __init__(self, x, y, orientation, sprite, space):
+    GamePhysicsObject.__init__(self, x, y, orientation, sprite, space, True)
+    # Define variable used to apply motion to the missile
+
+    self.orientation          = orientation
     self.acceleration         = 0.0
-    self.velocity             = 2.0
+    self.velocity             = 10.0
     self.angular_acceleration = 0.0
     self.angular_velocity     = 0.0
-    # Define the start position, which is also the position where the tank has to return with the flag
-    self.start_position       = pymunk.Vec2d(tank.start_position[0], tank.start_position[1])
- """ This is a nearly functional class, fix it next time """
+    # Define the start position, which is the position of the shooting tank
+    self.start_position       = pymunk.Vec2d(x, y)

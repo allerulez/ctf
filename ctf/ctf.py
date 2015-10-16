@@ -34,6 +34,7 @@ current_map         = maps.map0
 game_objects_list   = []
 game_objects_def_pos_list = []
 tanks_list          = []
+missiles_list		= []
 
 #-- Resize the screen to the size of the current level
 screen = pygame.display.set_mode(current_map.rect().size)
@@ -169,9 +170,11 @@ while running:
 		elif event.type == KEYUP and event.key == K_RIGHT:
 			gameobjects.Tank.stop_turning(tanks_list[0])
 		if event.type == KEYDOWN and event.key == K_RETURN:
-			gameobjects.Tank.shoot(tanks_list[0], space)
-		print(tank)
-
+			m = gameobjects.Tank.shoot(tanks_list[0], space)
+			missiles_list.append(m)
+			game_objects_list.append(m)
+			m.velocity = 10
+			print()
 	#-- Update physics
 	if(skip_update == 0):
 	  # Loop over all the game objects and update their speed in function of their
