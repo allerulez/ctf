@@ -100,7 +100,11 @@ game_objects_def_pos_list = list(game_objects_list)
 ais = []
 def default_pos(tile):
 	return tile in game_objects_def_pos_list
-
+# --- START ---
+def create_missile(tank):
+        x = GamePhysicsObjects.screen_orientation(tank)
+        # SKAPA EN MISSIL
+# --- END ---
 
 # Create the tanks
 # Loop over the starting position
@@ -171,6 +175,9 @@ while running:
 			gameobjects.Tank.stop_turning(tanks_list[0])
 		if event.type == KEYDOWN and event.key == K_RETURN:
 			m = gameobjects.Tank.shoot(tanks_list[0], space)
+                        # --- START ---
+                        #create_missile(tanks_list[0])
+                        # --- END ---
 			missiles_list.append(m)
 			game_objects_list.append(m)
 			m.velocity = 10
