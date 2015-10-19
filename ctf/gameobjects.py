@@ -147,8 +147,11 @@ class Tank(GamePhysicsObject):
     self.flag                 = None
     # Impose a maximum speed to the tank
     self.maximum_speed        = 1.0
+    self.x_pos                = x
+    self.y_pos                = y
+    self.sprite               = sprite
     # Define the start position, which is also the position where the tank has to return with the flag
-    self.start_position       = pymunk.Vec2d(x, y)
+    self.start_position       = pymunk.Vec2d(self.x_pos, self.y_pos)
   
   # Call this function to accelerate forward the tank
   def accelerate(self):
@@ -220,18 +223,17 @@ class Tank(GamePhysicsObject):
   # Call this function to shoot forward (current implementation does nothing ! you need to implement it yourself)
   def shoot(self, space):
     #missile = Tank(self)
-    missile = Missile(self.body.position[0], self.body.position[1]+0.5, math.degrees(self.body.angle)+90, images.missile, space)
+    missile = Missile(self.body.position[0], self.body.position[1], math.degrees(self.body.angle), images.missile, space)
     #self.stop_moving()
     #self.stop_turning()
     #self.velocity = -1    
-    missile.acceleration = 10
-    missile.update()
+    #missile.acceleration = 5
+    Tank.update(missile)
     #missile.stop_turning()
     #missile.acceleration = 0
     #missile.velocity += 2.0
     #missile.sprite = images.missile
     return missile
-    """Fixa denna skit, den rör sig INTE"""
 
 #
 # This class extends the GamePhysicsObject to handle box objects.
@@ -275,9 +277,10 @@ class Missile(GamePhysicsObject):
     # Define variable used to apply motion to the missile
 
     self.orientation          = orientation
-    self.acceleration         = 0.0
-    self.velocity             = 10.0
+    self.acceleration         = 10.0
+    self.velocity             = 5.0
     self.angular_acceleration = 0.0
     self.angular_velocity     = 0.0
+    self.maximum_speed        = 10.0
     # Define the start position, which is the position of the shooting tank
     self.start_position       = pymunk.Vec2d(x, y)

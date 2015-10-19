@@ -23,6 +23,7 @@ import boxmodels
 import images
 import gameobjects
 import maps
+import math
 
 #-- Constants
 framerate = 60
@@ -34,7 +35,8 @@ current_map         = maps.map0
 game_objects_list   = []
 game_objects_def_pos_list = []
 tanks_list          = []
-missiles_list		= []
+missile_list		= []
+box_list			= []
 
 #-- Resize the screen to the size of the current level
 screen = pygame.display.set_mode(current_map.rect().size)
@@ -96,15 +98,32 @@ for x in range(0, current_map.width):
 			#  further explanation)
 			box = gameobjects.Box(x + 0.5, y + 0.5, box_model, space)
 			game_objects_list.append(box)
+			box_list.append(box)
 game_objects_def_pos_list = list(game_objects_list)
 ais = []
 def default_pos(tile):
 	return tile in game_objects_def_pos_list
 # --- START ---
 def create_missile(tank):
-        x = GamePhysicsObjects.screen_orientation(tank)
+        x = GamePhysicsObject.screen_orientation(tank)
         # SKAPA EN MISSIL
 # --- END ---
+def tank_hit(missile, tank):
+	mis_pos = gameobjects.GamePhysicsObject.screen_position(missile)
+	tank_pos = gameobjects.GamePhysicsObject.screen_position(tank)
+	if math.fabs(mis_pos[0]-tank_pos[0])< 50 and math.fabs(mis_pos[1]-tank_pos[1])< 50:
+		return True
+	return False
+
+def box_hit(missile, box):
+
+	return False
+
+def missile_hit(missile):
+	velo = math.sqrt(missile.body.velocity[0]**2 + missile.body.velocity[1]**2)
+	if velo < 10.0:
+		return True
+	return False
 
 # Create the tanks
 # Loop over the starting position
@@ -149,7 +168,9 @@ def decelerate_until_stop(tank):
 running = True
 
 skip_update = 0
-
+for i in game_objects_list:
+		print(i)
+	
 while running:
 	#-- Handle the events
 	for event in pygame.event.get():
@@ -175,14 +196,22 @@ while running:
 			gameobjects.Tank.stop_turning(tanks_list[0])
 		if event.type == KEYDOWN and event.key == K_RETURN:
 			m = gameobjects.Tank.shoot(tanks_list[0], space)
-                        # --- START ---
+			            # --- START ---
                         #create_missile(tanks_list[0])
                         # --- END ---
-			missiles_list.append(m)
+			missile_list.append(m)
 			game_objects_list.append(m)
-			m.velocity = 10
-			print()
-	#-- Update physics
+		#	m.velocity = 5.0
+	
+	counter = 0
+	if missile_list:
+		if missile_hit(m):	
+			for i in tanks_list:
+				if tank_hit(m, i) and counter!=0:
+					i.body.position= i.start_position
+						
+				counter += 1
+	  #-- Update physics
 	if(skip_update == 0):
 	  # Loop over all the game objects and update their speed in function of their
 	  # acceleration.
@@ -194,6 +223,8 @@ while running:
 
 	#   Check collisions and update the objects position
 	space.step(1 / framerate)
+
+
 
 	for i in range(len(tanks_list)):
                 gameobjects.Tank.try_grab_flag(tanks_list[i], flag)
