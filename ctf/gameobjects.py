@@ -150,6 +150,7 @@ class Tank(GamePhysicsObject):
     self.x_pos                = x
     self.y_pos                = y
     self.sprite               = sprite
+    self.shape.collision_type = 1
     # Define the start position, which is also the position where the tank has to return with the flag
     self.start_position       = pymunk.Vec2d(self.x_pos, self.y_pos)
   
@@ -244,7 +245,7 @@ class Box(GamePhysicsObject):
   def __init__(self, x, y, boxmodel, space):
     self.boxmodel = boxmodel
     GamePhysicsObject.__init__(self, x, y, 0, self.boxmodel.sprite, space, self.boxmodel.movable)
-
+    self.shape.collision_type = 2
 #
 # This class extends GameObject for object that are visible on screen but have no physical representation (bases and flag)
 #

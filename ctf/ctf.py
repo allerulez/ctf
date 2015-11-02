@@ -119,7 +119,7 @@ def tank_hit(missile, tank):
 	return False
 
 def box_hit(missile):
-	return False
+	pass
 
 def missile_hit(missile):
 	velo = math.sqrt(missile.body.velocity[0]**2 + missile.body.velocity[1]**2)
@@ -173,6 +173,8 @@ def decelerate_until_stop(tank):
 	elif tank.velocity < 0:
 		tank.acceleration = 0.5
 		"""
+"""DAGS ATT FIXA RIKTIG COLLISION"""
+#space.add_collision_handler(0, 2, pre_solve = box_hit)
 #----- Main Loop -----#
 
 #-- Control whether the game run
