@@ -36,7 +36,9 @@ game_objects_list   = []
 game_objects_def_pos_list = []
 tanks_list          = []
 missile_list		= []
-box_list			= []
+box_dict			= {}
+exp_list			= []
+exp_time			= []
 
 #-- Resize the screen to the size of the current level
 screen = pygame.display.set_mode(current_map.rect().size)
@@ -54,7 +56,7 @@ for x in range(0, current_map.width):
 		# The call to the function "blit" will copy the image contained in "images.grass"
 		# into the "background" image at the coordinates given as the secnod argument
 		background.blit(images.grass, (x*images.TILE_SIZE, y*images.TILE_SIZE))
-
+"""
 base1 = gameobjects.GameVisibleObject(0.5, 0.5, images.bases[0])
 base2 = gameobjects.GameVisibleObject(current_map.width - 0.5, 0.5, images.bases[1])
 base3 = gameobjects.GameVisibleObject(0.5, current_map.height - 0.5, images.bases[2])
@@ -64,7 +66,7 @@ game_objects_list.append(base1)
 game_objects_list.append(base2)
 game_objects_list.append(base3)
 game_objects_list.append(base4)
-
+"""
 # --- Fence around the map START ---
 nw_box = pm.Body()
 se_box = pm.Body()
@@ -98,7 +100,8 @@ for x in range(0, current_map.width):
 			#  further explanation)
 			box = gameobjects.Box(x + 0.5, y + 0.5, box_model, space)
 			game_objects_list.append(box)
-			box_list.append(box)
+			box_dict[(x+0.5, y+0.5)] = box
+
 game_objects_def_pos_list = list(game_objects_list)
 ais = []
 def default_pos(tile):
@@ -111,12 +114,11 @@ def create_missile(tank):
 def tank_hit(missile, tank):
 	mis_pos = gameobjects.GamePhysicsObject.screen_position(missile)
 	tank_pos = gameobjects.GamePhysicsObject.screen_position(tank)
-	if math.fabs(mis_pos[0]-tank_pos[0])< 50 and math.fabs(mis_pos[1]-tank_pos[1])< 50:
+	if math.fabs(mis_pos[0]-tank_pos[0])< 30 and math.fabs(mis_pos[1]-tank_pos[1])< 30:
 		return True
 	return False
 
-def box_hit(missile, box):
-
+def box_hit(missile):
 	return False
 
 def missile_hit(missile):
@@ -133,17 +135,26 @@ for i in range(0, len(current_map.start_positions)):
 	pos = current_map.start_positions[i]
 	# Create the tank, images.tank contains the image
 	tank = gameobjects.Tank(pos[0], pos[1], pos[2], images.tanks[i], space)
+	# Add the tanks base to the map and game_object_list
+	base = gameobjects.GameVisibleObject(pos[0],pos[1], images.bases[i])
 	# Add the tank to the list of objects to display
 	game_objects_list.append(tank)
+	game_objects_list.append(base)
 	# Add the tank to the list of tanks
 	tanks_list.append(tank)
 	# Add the bases gameobjects
 
-	#Add AI
+	#Add ai
 	if i > 0:
 		ais.append(ai.SimpleAi(tanks_list[i], game_objects_list, tanks_list, space))
 	
+"""
+# Collision handlers ----START----
+space.add_collision_handler(0, 1, presolve=collision_bullet_tank)
+space.add_post_step_callback(space.remove, arb.shapes[0],arb.shapes[0].body)
 
+# Collision handlers ----END----
+"""
 """
 pm.Segment(, (-1,-1),(-1, current_map.height+1), 1)
 pm.Segment(, (-1,-1),(current_map.width+1, -1), 1)
@@ -166,10 +177,11 @@ def decelerate_until_stop(tank):
 
 #-- Control whether the game run
 running = True
-
+start = 0
+exp_start = 0
 skip_update = 0
-for i in game_objects_list:
-		print(i)
+#for i in game_objects_list:
+#		print(i)
 	
 while running:
 	#-- Handle the events
@@ -195,29 +207,36 @@ while running:
 		elif event.type == KEYUP and event.key == K_RIGHT:
 			gameobjects.Tank.stop_turning(tanks_list[0])
 		if event.type == KEYDOWN and event.key == K_RETURN:
-			m = gameobjects.Tank.shoot(tanks_list[0], space)
-			            # --- START ---
-                        #create_missile(tanks_list[0])
-                        # --- END ---
-			missile_list.append(m)
-			game_objects_list.append(m)
-		#	m.velocity = 5.0
+			if not start or time.time() > start + 1:
+				m = gameobjects.Tank.shoot(tanks_list[0], space)
+				missile_list.append(m)
+				game_objects_list.append(m)
+				start = time.time()
 	
 	counter = 0
 	if missile_list:
-		if missile_hit(m):	
+		if missile_hit(m):
 			for i in tanks_list:
 				if tank_hit(m, i) and counter!=0:
+					exp_list.append(gameobjects.GameVisibleObject(i.body.position[0], i.body.position[1], images.explosion))
+					game_objects_list.append(exp_list[-1])
+					exp_time.append(time.time())
 					i.body.position= i.start_position
-						
 				counter += 1
+			missile_list.remove(m)
+			game_objects_list.remove(m)
+			m.body.position = pm.Vec2d(-100, -100)
+	if exp_time and time.time() > exp_time[0] + 1 and exp_list:
+		game_objects_list.remove(exp_list[0])
+		exp_list.pop(0)
+		exp_time.pop(0)
 	  #-- Update physics
 	if(skip_update == 0):
 	  # Loop over all the game objects and update their speed in function of their
 	  # acceleration.
 		for obj in game_objects_list:
 			obj.update()
-		skip_update = 5
+		skip_update = 1
 	else:
 		skip_update -= 1
 
@@ -230,7 +249,7 @@ while running:
                 gameobjects.Tank.try_grab_flag(tanks_list[i], flag)
                 if gameobjects.Tank.has_won(tanks_list[i]):
                         running = False
-                if i < 3:
+                if i < len(tanks_list)-1:
                         ai.SimpleAi.decide(ais[i])
 
 

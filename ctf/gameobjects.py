@@ -226,8 +226,7 @@ class Tank(GamePhysicsObject):
     missile = Missile(self.body.position[0], self.body.position[1], math.degrees(self.body.angle), images.missile, space)
     #self.stop_moving()
     #self.stop_turning()
-    #self.velocity = -1    
-    #missile.acceleration = 5
+    self.velocity = -1
     Tank.update(missile)
     #missile.stop_turning()
     #missile.acceleration = 0
@@ -282,5 +281,6 @@ class Missile(GamePhysicsObject):
     self.angular_acceleration = 0.0
     self.angular_velocity     = 0.0
     self.maximum_speed        = 10.0
+    self.shape.collision_type = 0
     # Define the start position, which is the position of the shooting tank
     self.start_position       = pymunk.Vec2d(x, y)

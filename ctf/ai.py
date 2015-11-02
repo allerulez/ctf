@@ -100,6 +100,14 @@ class Ai:
 # One of the principle idea behind the design of this AI is to make the best effort to ensure that tank
 # do not get stuck, to achieve that result, the tank try to either move horizontally or vertically.
 #
+missile_list    = []
+box_list      = []
+exp_list      = []
+exp_time      = []
+start = 0
+exp_start = 0
+skip_update = 0
+
 class SimpleAi(Ai):
   def __init__(self, tank,  game_objects_list, tanks_list, space):
     Ai.__init__(self, tank,  game_objects_list, tanks_list, space)
@@ -233,7 +241,31 @@ class SimpleAi(Ai):
       self.tank.turn_left()
     else:
       self.tank.turn_right()
-      
+      """
+    if self.get_object_in_direction( 5, self.tank.body.angle) and self.is_object_tank(self, get_object_in_direction( 5, self.tank.body.angle)):
+      if not start or time.time() > start + 1:
+        m = gameobjects.Tank.shoot(self, space)
+        missile_list.append(m)
+        game_objects_list.append(m)
+        start = time.time()
+    counter = 0
+    if missile_list:
+      if missile_hit(m):  
+        for i in tanks_list:
+          if tank_hit(m, i) and counter!=0:
+            exp_list.append(gameobjects.GameVisibleObject(i.body.position[0], i.body.position[1], images.explosion))
+            game_objects_list.append(exp_list[-1])
+            exp_time.append(time.time())
+            i.body.position= i.start_position
+          counter += 1
+        missile_list.remove(m)
+        game_objects_list.remove(m)
+        m.body.position = pm.Vec2d(-100, -100)
+    if exp_time and time.time() > exp_time[0] + 1 and exp_list:  
+      game_objects_list.remove(exp_list[0])
+      exp_list.pop(0)
+      exp_time.pop(0)
+      """
   # This function return the position of the point of interest
   #  Which is the flag or the base
   #
