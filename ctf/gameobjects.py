@@ -2,6 +2,7 @@ import images
 import pygame
 import pymunk
 import math
+import boxmodels
 
 # This function is used to convert coordinates in the physic engine into the display coordinates
 def physics_to_display(x):
@@ -108,9 +109,11 @@ class GamePhysicsObject(GameObject):
     self.body.angle     = math.radians(orientation)
     # Create a polygon shape using the corner of the rectangle
     self.shape          = pymunk.Poly(self.body, points)
+    self.shape.parent   = self
     # Set some value for friction and elasticity, which defines interraction in case of a colision
     self.shape.friction = 0.5
     self.shape.elasticity = 0.1
+
     # Add the object to the physic engine
     if(movable):
       space.add(self.body, self.shape)
@@ -151,24 +154,28 @@ class Tank(GamePhysicsObject):
     self.y_pos                = y
     self.sprite               = sprite
     self.shape.collision_type = 1
+    self.hp                   = 2
+    self.hp_vis               = []
+    
+
     # Define the start position, which is also the position where the tank has to return with the flag
     self.start_position       = pymunk.Vec2d(self.x_pos, self.y_pos)
   
   # Call this function to accelerate forward the tank
   def accelerate(self):
-    self.acceleration = 0.1
+    self.acceleration = 0.2
   
   # Call this function to accelerate backward the tank
   def decelerate(self):
-    self.acceleration = -0.1
+    self.acceleration = -0.2
   
   # Call this function to start turning in the left direction
   def turn_left(self):
-    self.angular_acceleration = -0.1
+    self.angular_acceleration = -0.2
   
   # Call this function to start turning in the right direction
   def turn_right(self):
-    self.angular_acceleration = 0.1
+    self.angular_acceleration = 0.2
   
   def update(self):
     # Update the velocity of the tank in function of the physic simulation (in case of colision, the physic simulation will change the speed of the tank)
@@ -205,7 +212,16 @@ class Tank(GamePhysicsObject):
       self.flag.x           = self.body.position[0]
       self.flag.y           = self.body.position[1]
       self.flag.orientation = -math.degrees(self.body.angle)
-  
+"""
+  def hp_update(self):
+    # If the tank carries the flag, then update the positon of the flag
+    #if(self.flag != None):
+    self.hp1.x           = self.body.position[0]-0.2
+    self.hp1.y           = self.body.position[1]
+    self.hp2.x           = self.body.position[0]+0.2
+    self.hp2.y           = self.body.position[1]
+    #self.flag.orientation = -math.degrees(self.body.angle)
+"""
   # Call this function to try to grab the flag, if the flag is not on other tank
   # and it is close to the current tank, then the current tank will grab the flag
   def try_grab_flag(self, flag):
@@ -217,7 +233,7 @@ class Tank(GamePhysicsObject):
         # Grab the flag !
         self.flag           = flag
         self.is_on_tank     = True
-        self.maximum_speed  = 0.5
+        self.maximum_speed  = 2
   # Check if the current tank has won (if it is has the flag and it is close to its start position)
   def has_won(self):
     return self.flag != None and (self.start_position - self.body.position).length < 0.2
@@ -245,10 +261,14 @@ class Box(GamePhysicsObject):
   def __init__(self, x, y, boxmodel, space):
     self.boxmodel = boxmodel
     GamePhysicsObject.__init__(self, x, y, 0, self.boxmodel.sprite, space, self.boxmodel.movable)
-    self.shape.collision_type = 2
+    self.shape.collision_type = 10
+    self.hp                   = -1
+    self.box_type             = boxmodels.get_model(boxmodel)
+      
 #
 # This class extends GameObject for object that are visible on screen but have no physical representation (bases and flag)
 #
+
 class GameVisibleObject(GameObject):
   #
   # It takes argument the coordinates (x,y) and the sprite.
@@ -270,6 +290,10 @@ class Flag(GameVisibleObject):
   def __init__(self, x, y):
     self.is_on_tank   = False
     GameVisibleObject.__init__(self, x, y,  images.flag)
+
+class HP(GameVisibleObject):
+  def __init__(self, x, y):
+    GameVisibleObject.__init__(self, x, y,  images.hp)
 
 class Missile(GamePhysicsObject):
   def __init__(self, x, y, orientation, sprite, space):

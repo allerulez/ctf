@@ -39,6 +39,8 @@ woodbox   = load_image('woodbox.png')
 # Image of flag
 flag      = load_image('flag.png')
 
+hp		  = load_image('hp.png')
+
 # List of image of tanks of different colors
 tanks     = [load_image('tank_orange.png'), load_image('tank_blue.png'), load_image('tank_white.png'),
              load_image('tank_yellow.png'), load_image('tank_red.png'),  load_image('tank_gray.png')]

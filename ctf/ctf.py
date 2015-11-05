@@ -1,5 +1,6 @@
 import pygame
 import time	
+import math
 from pygame.locals import *
 from pygame.color import *
 import pymunk as pm
@@ -23,7 +24,7 @@ import boxmodels
 import images
 import gameobjects
 import maps
-import math
+
 
 #-- Constants
 framerate = 60
@@ -31,6 +32,8 @@ framerate = 60
 #-- Variables
 #   Define the current level
 current_map         = maps.map0
+
+
 #   List of all game objects
 game_objects_list   = []
 game_objects_def_pos_list = []
@@ -51,11 +54,13 @@ background = pygame.Surface(screen.get_size())
 #   The first loop will iterate "x" between "0" and "width-1" and the second loop will iterate
 #   "y" between "0" and "height-1"
 #""
+
 for x in range(0, current_map.width):
 	for y in range(0, current_map.height):
 		# The call to the function "blit" will copy the image contained in "images.grass"
 		# into the "background" image at the coordinates given as the secnod argument
 		background.blit(images.grass, (x*images.TILE_SIZE, y*images.TILE_SIZE))
+
 """
 base1 = gameobjects.GameVisibleObject(0.5, 0.5, images.bases[0])
 base2 = gameobjects.GameVisibleObject(current_map.width - 0.5, 0.5, images.bases[1])
@@ -67,15 +72,18 @@ game_objects_list.append(base2)
 game_objects_list.append(base3)
 game_objects_list.append(base4)
 """
+
 # --- Fence around the map START ---
 nw_box = pm.Body()
 se_box = pm.Body()
-
 north_seg = pm.Segment(nw_box,  (-0.5, -0.5), (current_map.width + 0.5, -0.5), 0.5)
 east_seg = pm.Segment(se_box, (current_map.width + 0.5, current_map.height + 0.5),(current_map.width + 0.5, -0.5), 0.5)
 south_seg = pm.Segment(se_box,  (current_map.width + 0.5, current_map.height + 0.5),(-0.5 , current_map.height + 0.5), 0.5)
 west_seg = pm.Segment(nw_box,   (-0.5, -0.5), (-0.5, current_map.height + 0.5), 0.5)
-
+north_seg.collision_type = 10
+east_seg.collision_type = 10
+south_seg.collision_type = 10
+west_seg.collision_type = 10
 space.add(north_seg, east_seg, south_seg, west_seg)
 # --- Fence around the map END ---
 
@@ -99,18 +107,25 @@ for x in range(0, current_map.width):
 			#  know the centre of the box, have a look at the coordinate system section for 
 			#  further explanation)
 			box = gameobjects.Box(x + 0.5, y + 0.5, box_model, space)
+			if box_type == 2:
+				box.shape.collision_type = 2
+				box.hp = 1
+			elif box_type == 1:				
+				box.shape.collision_type = 10
 			game_objects_list.append(box)
 			box_dict[(x+0.5, y+0.5)] = box
+
 
 game_objects_def_pos_list = list(game_objects_list)
 ais = []
 def default_pos(tile):
 	return tile in game_objects_def_pos_list
 # --- START ---
-def create_missile(tank):
-        x = GamePhysicsObject.screen_orientation(tank)
-        # SKAPA EN MISSIL
+#def create_missile(tank):
+#        x = GamePhysicsObject.screen_orientation(tank)
+#        # SKAPA EN MISSIL
 # --- END ---
+"""
 def tank_hit(missile, tank):
 	mis_pos = gameobjects.GamePhysicsObject.screen_position(missile)
 	tank_pos = gameobjects.GamePhysicsObject.screen_position(tank)
@@ -121,11 +136,62 @@ def tank_hit(missile, tank):
 def box_hit(missile):
 	pass
 
+
 def missile_hit(missile):
 	velo = math.sqrt(missile.body.velocity[0]**2 + missile.body.velocity[1]**2)
 	if velo < 10.0:
 		return True
 	return False
+"""
+# This function call creates a new flag object at coordinates x, y
+flag = gameobjects.Flag(current_map.width/2, current_map.height/2)
+game_objects_list.append(flag)
+# ---FIXA IMORGON ---
+# Visuell explosion med en liten explosion för missilen
+# samt en stor när en tank/låda sprängs.
+# Visuell reload time, Överhettad tank / cirkel som snurrar
+# Stål lådorna ska få en högre friktion
+# Sten lådorna ska få ett HP
+# ---Mission COMPLETED ---
+
+def tank_hit(space, arb):
+	if arb.shapes[1].parent != tanks_list[0]:
+		arb.shapes[1].parent.hp -= 1
+		if arb.shapes[1].parent.hp == 1:
+			game_objects_list.remove(arb.shapes[1].parent.hp_vis[0])
+		if arb.shapes[1].parent.hp == 0:
+			if arb.shapes[1].parent.flag != None:
+				flag_x = arb.shapes[1].parent.x_pos
+				flag_y = arb.shapes[1].parent.y_pos
+				arb.shapes[1].parent.flag = None
+				arb.shapes[1].parent.body.position = arb.shapes[1].parent.start_position
+				flag = gameobjects.Flag(flag_x, flag_y)	
+			arb.shapes[1].parent.hp = 2
+			game_objects_list.append(arb.shapes[1].parent.hp_vis[0])
+			arb.shapes[1].parent.body.position = arb.shapes[1].parent.start_position
+		space.add_post_step_callback(space.remove, arb.shapes[0], arb.shapes[0].body)
+		game_objects_list.remove(arb.shapes[0].parent)
+	return 1 
+
+def box_hit(space, arb):
+	arb.shapes[1].parent.hp -= 1
+	if arb.shapes[1].parent.hp == 0:
+		space.add_post_step_callback(space.remove, arb.shapes[1], arb.shapes[1].body)
+		game_objects_list.remove(arb.shapes[1].parent)
+	if arb.shapes[0].parent in game_objects_list:
+		space.add_post_step_callback(space.remove, arb.shapes[0], arb.shapes[0].body)
+		game_objects_list.remove(arb.shapes[0].parent)
+
+	return 1
+
+
+def other_hit(space, arb):
+	
+	if arb.shapes[0].parent in game_objects_list:
+		space.add_post_step_callback(space.remove, arb.shapes[0], arb.shapes[0].body)
+		game_objects_list.remove(arb.shapes[0].parent)
+	return 1
+
 
 # Create the tanks
 # Loop over the starting position
@@ -137,9 +203,22 @@ for i in range(0, len(current_map.start_positions)):
 	tank = gameobjects.Tank(pos[0], pos[1], pos[2], images.tanks[i], space)
 	# Add the tanks base to the map and game_object_list
 	base = gameobjects.GameVisibleObject(pos[0],pos[1], images.bases[i])
+	# Add the tanks hp bar
+	tank.hp_vis += [gameobjects.HP(pos[0]-0.2, pos[1]+0.25)]
+	tank.hp_vis += [gameobjects.HP(pos[0]+0.2, pos[1]+0.25)]
 	# Add the tank to the list of objects to display
 	game_objects_list.append(tank)
 	game_objects_list.append(base)
+	"""
+	tank.hp_vis += [hp1]
+	tank.hp_vis += [hp2]
+	"""
+	for hp in tank.hp_vis:
+		game_objects_list.append(hp)
+		
+
+	
+
 	# Add the tank to the list of tanks
 	tanks_list.append(tank)
 	# Add the bases gameobjects
@@ -148,33 +227,16 @@ for i in range(0, len(current_map.start_positions)):
 	if i > 0:
 		ais.append(ai.SimpleAi(tanks_list[i], game_objects_list, tanks_list, space))
 	
-"""
-# Collision handlers ----START----
-space.add_collision_handler(0, 1, presolve=collision_bullet_tank)
-space.add_post_step_callback(space.remove, arb.shapes[0],arb.shapes[0].body)
 
+# Collision handlers ----START----
+
+space.add_collision_handler(0, 1, None, tank_hit)
+space.add_collision_handler(0, 2, None, box_hit)
+space.add_collision_handler(0, 10, None, other_hit)
 # Collision handlers ----END----
-"""
-"""
-pm.Segment(, (-1,-1),(-1, current_map.height+1), 1)
-pm.Segment(, (-1,-1),(current_map.width+1, -1), 1)
-pm.Segment(, (current_map.width+1, current_map.height+1), (current_map.width+1, -1), 1)
-pm.Segment(, (current_map.width+1, current_map.height+1), (-1, current_map.height+1), 1)
-"""
-# This function call create a new flag object at coordinates x, y
-flag = gameobjects.Flag(current_map.width/2, current_map.height/2)
-game_objects_list.append(flag)
-"""
-def decelerate_until_stop(tank):
-	if tank.velocity > 0:
-		tank.acceleration = -0.5
-		if tank.velocity <= 0:
-			tank.stop_moving()
-	elif tank.velocity < 0:
-		tank.acceleration = 0.5
-		"""
-"""DAGS ATT FIXA RIKTIG COLLISION"""
-#space.add_collision_handler(0, 2, pre_solve = box_hit)
+
+
+
 #----- Main Loop -----#
 
 #-- Control whether the game run
@@ -182,14 +244,12 @@ running = True
 start = 0
 exp_start = 0
 skip_update = 0
-#for i in game_objects_list:
-#		print(i)
 	
 while running:
 	#-- Handle the events
 	for event in pygame.event.get():
 		# Check if we receive a QUIT event (for instance, if the user press the
-		# close button of the wiendow) or if the user press the escape key.
+		# close button of the window) or if the user press the escape key.
 		if event.type == QUIT or (event.type == KEYDOWN and event.key == K_ESCAPE):
 			running = False
 		if event.type == KEYDOWN and event.key == K_UP:
@@ -209,36 +269,19 @@ while running:
 		elif event.type == KEYUP and event.key == K_RIGHT:
 			gameobjects.Tank.stop_turning(tanks_list[0])
 		if event.type == KEYDOWN and event.key == K_RETURN:
-			if not start or time.time() > start + 1:
+			if not start or time.time() > start + 2:
 				m = gameobjects.Tank.shoot(tanks_list[0], space)
 				missile_list.append(m)
 				game_objects_list.append(m)
 				start = time.time()
-	
-	counter = 0
-	if missile_list:
-		if missile_hit(m):
-			for i in tanks_list:
-				if tank_hit(m, i) and counter!=0:
-					exp_list.append(gameobjects.GameVisibleObject(i.body.position[0], i.body.position[1], images.explosion))
-					game_objects_list.append(exp_list[-1])
-					exp_time.append(time.time())
-					i.body.position= i.start_position
-				counter += 1
-			missile_list.remove(m)
-			game_objects_list.remove(m)
-			m.body.position = pm.Vec2d(-100, -100)
-	if exp_time and time.time() > exp_time[0] + 1 and exp_list:
-		game_objects_list.remove(exp_list[0])
-		exp_list.pop(0)
-		exp_time.pop(0)
-	  #-- Update physics
+
+
 	if(skip_update == 0):
 	  # Loop over all the game objects and update their speed in function of their
 	  # acceleration.
 		for obj in game_objects_list:
 			obj.update()
-		skip_update = 1
+		skip_update = 5
 	else:
 		skip_update -= 1
 
