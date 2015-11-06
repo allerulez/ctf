@@ -42,11 +42,9 @@ missile_list		= []
 box_dict			= {}
 exp_list			= []
 exp_time			= []
-
+tank_exp_list		= []
 #-- Resize the screen to the size of the current level
 screen = pygame.display.set_mode(current_map.rect().size)
-
-
 
 background = pygame.Surface(screen.get_size())
 #   Copy the grass tile all over the level area
@@ -147,16 +145,36 @@ def missile_hit(missile):
 flag = gameobjects.Flag(current_map.width/2, current_map.height/2)
 game_objects_list.append(flag)
 # ---FIXA IMORGON ---
-# Visuell explosion med en liten explosion för missilen
-# samt en stor när en tank/låda sprängs.
+# Nya tiles
+# Finare tiles
+########### Visuell explosion: en liten explosion för missilen
+########### samt en stor när en tank/låda sprängs.
 # Visuell reload time, Överhettad tank / cirkel som snurrar
-# Stål lådorna ska få en högre friktion
-# Sten lådorna ska få ett HP
+# Stållådorna ska få en högre friktion
+# Stenlådorna ska få ett HP
 # ---Mission COMPLETED ---
+
+def tank_explosion(tank_or_box, image):
+	tank_pos = tank_or_box.body.position
+	exp = gameobjects.GameVisibleObject(tank_pos[0] , tank_pos[1], image)
+	exp_list.append(exp)
+	exp_start = time.time()
+	exp_time.append(exp_start)
+	game_objects_list.append(exp)
+	def remove_explosion():
+		if time.time() > exp_start + 0.5:
+			exp_list.remove(exp)
+			exp_time.remove(exp_start)
+			game_objects_list.remove(exp)
+			return True
+		return False
+	return remove_explosion
+
 
 def tank_hit(space, arb):
 	if arb.shapes[1].parent != tanks_list[0]:
 		arb.shapes[1].parent.hp -= 1
+		tank_exp_list.append(tank_explosion(arb.shapes[1].parent, images.small_explosion))
 		if arb.shapes[1].parent.hp == 1:
 			game_objects_list.remove(arb.shapes[1].parent.hp_vis[0])
 		if arb.shapes[1].parent.hp == 0:
@@ -166,6 +184,7 @@ def tank_hit(space, arb):
 				arb.shapes[1].parent.flag = None
 				arb.shapes[1].parent.body.position = arb.shapes[1].parent.start_position
 				flag = gameobjects.Flag(flag_x, flag_y)	
+			tank_exp_list.append(tank_explosion(arb.shapes[1].parent, images.explosion))
 			arb.shapes[1].parent.hp = 2
 			game_objects_list.append(arb.shapes[1].parent.hp_vis[0])
 			arb.shapes[1].parent.body.position = arb.shapes[1].parent.start_position
@@ -176,6 +195,7 @@ def tank_hit(space, arb):
 def box_hit(space, arb):
 	arb.shapes[1].parent.hp -= 1
 	if arb.shapes[1].parent.hp == 0:
+		tank_exp_list.append(tank_explosion(arb.shapes[1].parent, images.explosion))
 		space.add_post_step_callback(space.remove, arb.shapes[1], arb.shapes[1].body)
 		game_objects_list.remove(arb.shapes[1].parent)
 	if arb.shapes[0].parent in game_objects_list:
@@ -201,7 +221,7 @@ for i in range(0, len(current_map.start_positions)):
 	pos = current_map.start_positions[i]
 	# Create the tank, images.tank contains the image
 	tank = gameobjects.Tank(pos[0], pos[1], pos[2], images.tanks[i], space)
-	# Add the tanks base to the map and game_object_list
+	# Add the tanks base to the map and game_objects_list
 	base = gameobjects.GameVisibleObject(pos[0],pos[1], images.bases[i])
 	# Add the tanks hp bar
 	tank.hp_vis += [gameobjects.HP(pos[0]-0.2, pos[1]+0.25)]
@@ -270,11 +290,14 @@ while running:
 			gameobjects.Tank.stop_turning(tanks_list[0])
 		if event.type == KEYDOWN and event.key == K_RETURN:
 			if not start or time.time() > start + 2:
+
 				m = gameobjects.Tank.shoot(tanks_list[0], space)
 				missile_list.append(m)
 				game_objects_list.append(m)
 				start = time.time()
-
+	
+	if tank_exp_list and tank_exp_list[0]():
+		tank_exp_list.pop(0)
 
 	if(skip_update == 0):
 	  # Loop over all the game objects and update their speed in function of their

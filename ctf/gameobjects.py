@@ -156,10 +156,20 @@ class Tank(GamePhysicsObject):
     self.shape.collision_type = 1
     self.hp                   = 2
     self.hp_vis               = []
+    self.is_overheated        = False
     
-
     # Define the start position, which is also the position where the tank has to return with the flag
     self.start_position       = pymunk.Vec2d(self.x_pos, self.y_pos)
+"""
+  def overheat(self, set_heat):
+    self.is_overheated = set_heat
+    if self.is_overheated:
+      """
+
+      #--------------------
+      # FIX THIAS NWEOEOWOAWW
+      #--------------------
+
   
   # Call this function to accelerate forward the tank
   def accelerate(self):
@@ -212,7 +222,7 @@ class Tank(GamePhysicsObject):
       self.flag.x           = self.body.position[0]
       self.flag.y           = self.body.position[1]
       self.flag.orientation = -math.degrees(self.body.angle)
-"""
+  """
   def hp_update(self):
     # If the tank carries the flag, then update the positon of the flag
     #if(self.flag != None):
@@ -221,7 +231,7 @@ class Tank(GamePhysicsObject):
     self.hp2.x           = self.body.position[0]+0.2
     self.hp2.y           = self.body.position[1]
     #self.flag.orientation = -math.degrees(self.body.angle)
-"""
+  """
   # Call this function to try to grab the flag, if the flag is not on other tank
   # and it is close to the current tank, then the current tank will grab the flag
   def try_grab_flag(self, flag):
