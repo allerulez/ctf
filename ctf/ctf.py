@@ -346,8 +346,6 @@ while running:
                 if i < len(tanks_list)-1:
                         ai.SimpleAi.decide(ais[i])
 
-
-
 	#   Update object that depends on an other object position (for instance a flag)
 	for obj in game_objects_list:
 	  obj.post_update()

@@ -17,7 +17,7 @@ woodbox  = BoxModel(images.woodbox,  True, True)
 metalbox = BoxModel(images.metalbox, True, False)
 
 # Define the rock box (ie wall) as non movable and indestructable
-rockbox  = BoxModel(images.rockbox,  False, True)
+rockbox  = BoxModel(images.rockbox,  False, False)
 
 rockbox_mov = BoxModel(images.rockbox, True, True)
 

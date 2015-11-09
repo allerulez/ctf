@@ -226,7 +226,6 @@ class Tank(GamePhysicsObject):
       self.oh.y           = self.body.position[1]
       #self.oh.orientation = -math.degrees(self.body.angle)
     else:
-      
       self.oh.x           = 1337
       self.oh.y           = 1337 
 
