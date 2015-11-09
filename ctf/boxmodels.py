@@ -17,7 +17,9 @@ woodbox  = BoxModel(images.woodbox,  True, True)
 metalbox = BoxModel(images.metalbox, True, False)
 
 # Define the rock box (ie wall) as non movable and indestructable
-rockbox  = BoxModel(images.rockbox,  False, False)
+rockbox  = BoxModel(images.rockbox,  False, True)
+
+rockbox_mov = BoxModel(images.rockbox, True, True)
 
 # This function is used to select the model of a box in function of a number.
 # It is mostly used when initializing the boxes from the information contained
@@ -32,5 +34,7 @@ def get_model(type):
     return woodbox
   elif(type == 3):
     return metalbox
+  elif(type == 4):
+    return rockbox_mov
   else:
     return None

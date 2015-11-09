@@ -3,6 +3,8 @@ import pygame
 import pymunk
 import math
 import boxmodels
+import time
+
 
 # This function is used to convert coordinates in the physic engine into the display coordinates
 def physics_to_display(x):
@@ -97,7 +99,7 @@ class GamePhysicsObject(GameObject):
       # Create a movable object with some mass and moments
       # (considering the game is a top view game, with no gravity,
       # the mass is set to the same value for all objects)
-      mass = 10
+      mass = 50
       moment = pymunk.moment_for_poly(mass, points)
       self.body         = pymunk.Body(mass, moment)
     else:
@@ -111,7 +113,7 @@ class GamePhysicsObject(GameObject):
     self.shape          = pymunk.Poly(self.body, points)
     self.shape.parent   = self
     # Set some value for friction and elasticity, which defines interraction in case of a colision
-    self.shape.friction = 0.5
+    self.shape.friction = 1
     self.shape.elasticity = 0.1
 
     # Add the object to the physic engine
@@ -119,7 +121,7 @@ class GamePhysicsObject(GameObject):
       space.add(self.body, self.shape)
     else:
       space.add(self.shape)
-  
+  # TEEEEEEEEEEEEEST
   def screen_position(self):
     # screen_position is defined by the body position in the physic engine
     return physics_to_display(self.body.position)
@@ -128,7 +130,7 @@ class GamePhysicsObject(GameObject):
     # Angle are reversed in the engine and in display
     return -math.degrees(self.body.angle)
 
-# Convenient function to bound a value to a specific interval
+  # Convenient function to bound a value to a specific interval
 def clamp (minval, val, maxval):
   if val < minval: return minval
   if val > maxval: return maxval
@@ -156,21 +158,17 @@ class Tank(GamePhysicsObject):
     self.shape.collision_type = 1
     self.hp                   = 2
     self.hp_vis               = []
+    self.start                = 0
     self.is_overheated        = False
+    self.oh                   = GameVisibleObject(self.x_pos, self.y_pos, images.overheat)
     
     # Define the start position, which is also the position where the tank has to return with the flag
     self.start_position       = pymunk.Vec2d(self.x_pos, self.y_pos)
-"""
+  
   def overheat(self, set_heat):
     self.is_overheated = set_heat
-    if self.is_overheated:
-      """
+      
 
-      #--------------------
-      # FIX THIAS NWEOEOWOAWW
-      #--------------------
-
-  
   # Call this function to accelerate forward the tank
   def accelerate(self):
     self.acceleration = 0.2
@@ -222,6 +220,19 @@ class Tank(GamePhysicsObject):
       self.flag.x           = self.body.position[0]
       self.flag.y           = self.body.position[1]
       self.flag.orientation = -math.degrees(self.body.angle)
+
+    if self.is_overheated:
+      self.oh.x           = self.body.position[0]
+      self.oh.y           = self.body.position[1]
+      #self.oh.orientation = -math.degrees(self.body.angle)
+    else:
+      
+      self.oh.x           = 1337
+      self.oh.y           = 1337 
+
+  #def oh_update(self):
+      
+
   """
   def hp_update(self):
     # If the tank carries the flag, then update the positon of the flag
@@ -244,23 +255,21 @@ class Tank(GamePhysicsObject):
         self.flag           = flag
         self.is_on_tank     = True
         self.maximum_speed  = 2
+
   # Check if the current tank has won (if it is has the flag and it is close to its start position)
   def has_won(self):
     return self.flag != None and (self.start_position - self.body.position).length < 0.2
+
   # Call this function to shoot forward (current implementation does nothing ! you need to implement it yourself)
   def shoot(self, space):
-    #missile = Tank(self)
-    missile = Missile(self.body.position[0], self.body.position[1], math.degrees(self.body.angle), images.missile, space)
-    #self.stop_moving()
-    #self.stop_turning()
-    self.velocity = -1
-    Tank.update(missile)
-    #missile.stop_turning()
-    #missile.acceleration = 0
-    #missile.velocity += 2.0
-    #missile.sprite = images.missile
-    return missile
-
+    if not self.start or time.time() > self.start + 2:
+      missile = Missile(self.body.position[0], self.body.position[1], math.degrees(self.body.angle), images.missile, space, self)
+      self.velocity = -1
+      Tank.update(missile)
+      self.is_overheated = True
+      self.start = time.time()
+      return (missile, self.start, self)
+    
 #
 # This class extends the GamePhysicsObject to handle box objects.
 #
@@ -273,7 +282,6 @@ class Box(GamePhysicsObject):
     GamePhysicsObject.__init__(self, x, y, 0, self.boxmodel.sprite, space, self.boxmodel.movable)
     self.shape.collision_type = 10
     self.hp                   = -1
-    self.box_type             = boxmodels.get_model(boxmodel)
       
 #
 # This class extends GameObject for object that are visible on screen but have no physical representation (bases and flag)
@@ -306,10 +314,10 @@ class HP(GameVisibleObject):
     GameVisibleObject.__init__(self, x, y,  images.hp)
 
 class Missile(GamePhysicsObject):
-  def __init__(self, x, y, orientation, sprite, space):
+  def __init__(self, x, y, orientation, sprite, space, tank):
     GamePhysicsObject.__init__(self, x, y, orientation, sprite, space, True)
     # Define variable used to apply motion to the missile
-
+    self.tank                 = tank
     self.orientation          = orientation
     self.acceleration         = 10.0
     self.velocity             = 5.0

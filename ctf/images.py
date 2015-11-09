@@ -24,6 +24,8 @@ missile = load_image('missile.png')
 # Image of an explosion
 explosion = load_image('explosion.png')
 
+# Image of overheat
+overheat = load_image('overheat.png')
 # Image of a small explosion
 small_explosion = load_image('small_explosion.png')
 

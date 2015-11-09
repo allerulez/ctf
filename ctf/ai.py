@@ -1,6 +1,7 @@
 import math
 import pymunk
 import gameobjects
+import time
 
 #
 # This is the base class for implementing, Ais, it contains some convenient functions
@@ -128,8 +129,9 @@ class SimpleAi(Ai):
     self.no_move_timeout    = 0
     self.backingout         = 0
     self.should_turn        = False
+    self.start              = 0
   def decide(self):
-    """
+    
     if(self.last_shot == 0):
       self.last_shot = 20
       # Check if we should shoot
@@ -137,17 +139,18 @@ class SimpleAi(Ai):
       # Use chipmunk raycasting to get if there is an object in front of the tank
       
       obj = self.get_object_in_direction(10, 0)
-      
-      if(obj != None):
+      if(obj != None and (not self.tank.start or time.time() > self.tank.start + 2)):
         if hasattr(obj,  'boxmodel') and obj.boxmodel.destructable:
           # it is a wooden box, lets clear the way
-          self.tank.shoot()
+          m = gameobjects.Tank.shoot(self.tank, self.space)[0]
+          self.game_objects_list.append(m)
         if self.is_object_tank(obj):
           # it is an other tank, shoot
-          self.tank.shoot()
+          m = gameobjects.Tank.shoot(self.tank, self.space)[0]
+          self.game_objects_list.append(m)
     
     self.last_shot -= 1
-    """
+    
     # Test if the tank is blocked
     
     if( (self.last_position - self.tank.body.position).get_length() < 0.01 and math.cos(self.tank.body.angle - self.last_angle) > 0.995 ):
