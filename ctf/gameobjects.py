@@ -165,9 +165,6 @@ class Tank(GamePhysicsObject):
     # Define the start position, which is also the position where the tank has to return with the flag
     self.start_position       = pymunk.Vec2d(self.x_pos, self.y_pos)
   
-  def overheat(self, set_heat):
-    self.is_overheated = set_heat
-      
 
   # Call this function to accelerate forward the tank
   def accelerate(self):
@@ -224,13 +221,11 @@ class Tank(GamePhysicsObject):
     if self.is_overheated:
       self.oh.x           = self.body.position[0]
       self.oh.y           = self.body.position[1]
-      #self.oh.orientation = -math.degrees(self.body.angle)
     else:
       self.oh.x           = 1337
       self.oh.y           = 1337 
 
-  #def oh_update(self):
-      
+   
 
   """
   def hp_update(self):
@@ -261,15 +256,20 @@ class Tank(GamePhysicsObject):
 
   # Call this function to shoot forward (current implementation does nothing ! you need to implement it yourself)
   def shoot(self, space):
-    if not self.start or time.time() > self.start + 2:
-      missile = Missile(self.body.position[0], self.body.position[1], math.degrees(self.body.angle), images.missile, space, self)
-      self.velocity = -1
-      Tank.update(missile)
-      self.is_overheated = True
-      self.start = time.time()
+   # if not self.start or time.time() > self.start + 2:
+    missile = Missile(self.body.position[0], self.body.position[1], math.degrees(self.body.angle), images.missile, space, self)
+    self.velocity = -1
+    Tank.update(missile)
+    if self.is_overheated:
+      self.body.position[0] = self.start_position[0]
+      self.body.position[1] = self.start_position[1]
+      self.is_overheated = False
+      self.hp = 2
       return (missile, self.start, self)
-    
-#
+    self.is_overheated = True
+    self.start = time.time()
+    return (missile, self.start, self)
+
 # This class extends the GamePhysicsObject to handle box objects.
 #
 class Box(GamePhysicsObject):
@@ -281,7 +281,9 @@ class Box(GamePhysicsObject):
     GamePhysicsObject.__init__(self, x, y, 0, self.boxmodel.sprite, space, self.boxmodel.movable)
     self.shape.collision_type = 10
     self.hp                   = -1
-      
+    self.x_pos                = x
+    self.y_pos                = y
+    self.dead                 = False
 #
 # This class extends GameObject for object that are visible on screen but have no physical representation (bases and flag)
 #

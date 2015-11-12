@@ -28,16 +28,14 @@ import maps
 
 #-- Constants
 framerate = 60
-
 #-- Variables
 #   Define the current level
 current_map         = maps.map0
-
-
 #   List of all game objects
 game_objects_list   = []
 game_objects_def_pos_list = []
 tanks_list          = []
+ais 				= []
 #missile_list		= []
 box_dict			= {}
 exp_list			= []
@@ -45,31 +43,6 @@ exp_time			= []
 tank_exp_list		= []
 #-- Resize the screen to the size of the current level
 screen = pygame.display.set_mode(current_map.rect().size)
-
-background = pygame.Surface(screen.get_size())
-#   Copy the grass tile all over the level area
-#   The map has dimension a width of "current_map.width" and a height of "current_map.height"
-#   The first loop will iterate "x" between "0" and "width-1" and the second loop will iterate
-#   "y" between "0" and "height-1"
-#""
-
-for x in range(0, current_map.width):
-	for y in range(0, current_map.height):
-		# The call to the function "blit" will copy the image contained in "images.grass"
-		# into the "background" image at the coordinates given as the secnod argument
-		background.blit(images.grass, (x*images.TILE_SIZE, y*images.TILE_SIZE))
-
-"""
-base1 = gameobjects.GameVisibleObject(0.5, 0.5, images.bases[0])
-base2 = gameobjects.GameVisibleObject(current_map.width - 0.5, 0.5, images.bases[1])
-base3 = gameobjects.GameVisibleObject(0.5, current_map.height - 0.5, images.bases[2])
-base4 = gameobjects.GameVisibleObject(current_map.width - 0.5, current_map.height - 0.5, images.bases[3])
-
-game_objects_list.append(base1)
-game_objects_list.append(base2)
-game_objects_list.append(base3)
-game_objects_list.append(base4)
-"""
 
 # --- Fence around the map START ---
 nw_box = pm.Body()
@@ -85,7 +58,21 @@ west_seg.collision_type = 10
 space.add(north_seg, east_seg, south_seg, west_seg)
 # --- Fence around the map END ---
 
+background = pygame.Surface(screen.get_size())
+#   Copy the grass tile all over the level area
+#   The map has dimension a width of "current_map.width" and a height of "current_map.height"
+#   The first loop will iterate "x" between "0" and "width-1" and the second loop will iterate
+#   "y" between "0" and "height-1"
+#""
 
+for x in range(0, current_map.width):
+	for y in range(0, current_map.height):
+		# The call to the function "blit" will copy the image contained in "images.grass"
+		# into the "background" image at the coordinates given as the secnod argument
+		background.blit(images.grass, (x*images.TILE_SIZE, y*images.TILE_SIZE))
+
+
+# --- Creation of objects START ---
 #   The initial position and type of the boxes is contained in the "current_map.boxes" array,
 #   which is an array that has the size of the map, and whose cells contain the box type
 #   (0 means no box, 1 means wall, 2 means wood and 3 means steel)
@@ -118,47 +105,44 @@ for x in range(0, current_map.width):
 			game_objects_list.append(box)
 			box_dict[(x+0.5, y+0.5)] = box
 
+# Create the tanks
+# Loop over the starting position
 
+for i in range(0, len(current_map.start_positions)):
+	# Get the starting position of the tank "i"
+	pos = current_map.start_positions[i]
+	# Create the tank, images.tank contains the image
+	tank = gameobjects.Tank(pos[0], pos[1], pos[2], images.tanks[i], space)
+	# Add the tanks base to the map and game_objects_list
+	base = gameobjects.GameVisibleObject(pos[0],pos[1], images.bases[i])
+	# Add the tanks hp bar
+	tank.hp_vis += [gameobjects.HP(pos[0]-0.2, pos[1]+0.25)]
+	tank.hp_vis += [gameobjects.HP(pos[0]+0.2, pos[1]+0.25)]
+	# Add the tank to the list of objects to display
+	game_objects_list.append(tank)
+	game_objects_list.append(base)
+	for hp in tank.hp_vis:
+		game_objects_list.append(hp)
+	# Add the tank to the list of tanks
+	tanks_list.append(tank)
+	# Add the tanks overheat image to list
+	game_objects_list.append(tanks_list[i].oh)
 
-game_objects_def_pos_list = list(game_objects_list)
-ais = []
-def default_pos(tile):
-	return tile in game_objects_def_pos_list
-# --- START ---
-#def create_missile(tank):
-#        x = GamePhysicsObject.screen_orientation(tank)
-#        # SKAPA EN MISSIL
-# --- END ---
-"""
-def tank_hit(missile, tank):
-	mis_pos = gameobjects.GamePhysicsObject.screen_position(missile)
-	tank_pos = gameobjects.GamePhysicsObject.screen_position(tank)
-	if math.fabs(mis_pos[0]-tank_pos[0])< 30 and math.fabs(mis_pos[1]-tank_pos[1])< 30:
-		return True
-	return False
+	#Add ai
+	if i > 0:
+		ais.append(ai.SimpleAi(tanks_list[i], game_objects_list, tanks_list, space))
 
-def box_hit(missile):
-	pass
-
-
-def missile_hit(missile):
-	velo = math.sqrt(missile.body.velocity[0]**2 + missile.body.velocity[1]**2)
-	if velo < 10.0:
-		return True
-	return False
-"""
 # This function call creates a new flag object at coordinates x, y
 flag = gameobjects.Flag(current_map.width/2, current_map.height/2)
 game_objects_list.append(flag)
-# ---FIXA IMORGON ---
-# Nya tiles
-# Finare tiles
-########### Visuell explosion: en liten explosion för missilen
-########### samt en stor när en tank/låda sprängs.
-########### Visuell reload time, Överhettad tank / cirkel som snurrar
-########### Stållådorna ska få en högre friktion
-# Stenlådorna ska få ett HP
-# ---Mission COMPLETED ---
+game_objects_def_pos_list = list(game_objects_list)
+# --- Creation of objects END ---
+
+def default_pos(tile):
+	return tile in game_objects_def_pos_list
+
+
+# Collision handlers and functions ----START----
 
 def tank_explosion(tank_or_box, image):
 	tank_pos = tank_or_box.body.position
@@ -176,21 +160,20 @@ def tank_explosion(tank_or_box, image):
 		return False
 	return remove_explosion
 
-
 def tank_hit(space, arb):
 	if not arb.shapes[1].parent == arb.shapes[0].parent.tank:
 		arb.shapes[1].parent.hp -= 1
-		tank_exp_list.append(tank_explosion(arb.shapes[1].parent, images.small_explosion))
 		if arb.shapes[1].parent.hp == 1:
+			tank_exp_list.append(tank_explosion(arb.shapes[1].parent, images.small_explosion))
 			game_objects_list.remove(arb.shapes[1].parent.hp_vis[0])
-		if arb.shapes[1].parent.hp == 0:
+		elif arb.shapes[1].parent.hp == 0:
 			if arb.shapes[1].parent.flag != None:
 				flag_x = arb.shapes[1].parent.x_pos
 				flag_y = arb.shapes[1].parent.y_pos
 				arb.shapes[1].parent.flag = None
-				arb.shapes[1].parent.body.position = arb.shapes[1].parent.start_position
 				flag = gameobjects.Flag(flag_x, flag_y)	
 			tank_exp_list.append(tank_explosion(arb.shapes[1].parent, images.explosion))
+			arb.shapes[1].parent.body.position = arb.shapes[1].parent.start_position
 			arb.shapes[1].parent.hp = 2
 			game_objects_list.append(arb.shapes[1].parent.hp_vis[0])
 			arb.shapes[1].parent.body.position = arb.shapes[1].parent.start_position
@@ -208,81 +191,32 @@ def box_hit(space, arb):
 	if arb.shapes[0].parent in game_objects_list:
 		space.add_post_step_callback(space.remove, arb.shapes[0], arb.shapes[0].body)
 		game_objects_list.remove(arb.shapes[0].parent)
-
 	return 1
 
-def rock_hit(space, arb):
-	arb.shapes[1].parent.hp -= 1
-	
-	if arb.shapes[1].parent.hp == 0:
-		tank_exp_list.append(tank_explosion(arb.shapes[1].parent, images.explosion))
-		space.add_post_step_callback(space.remove, arb.shapes[1], arb.shapes[1].body)
-		game_objects_list.remove(arb.shapes[1].parent)
-	if arb.shapes[0].parent in game_objects_list:
-		space.add_post_step_callback(space.remove, arb.shapes[0], arb.shapes[0].body)
-		game_objects_list.remove(arb.shapes[0].parent)
-
-	return 1
 def other_hit(space, arb):
-	
 	if arb.shapes[0].parent in game_objects_list:
+		tank_exp_list.append(tank_explosion(arb.shapes[0].parent, images.small_explosion))
 		space.add_post_step_callback(space.remove, arb.shapes[0], arb.shapes[0].body)
 		game_objects_list.remove(arb.shapes[0].parent)
 	return 1
-
-
-# Create the tanks
-# Loop over the starting position
-
-for i in range(0, len(current_map.start_positions)):
-	# Get the starting position of the tank "i"
-	pos = current_map.start_positions[i]
-	# Create the tank, images.tank contains the image
-	tank = gameobjects.Tank(pos[0], pos[1], pos[2], images.tanks[i], space)
-	# Add the tanks base to the map and game_objects_list
-	base = gameobjects.GameVisibleObject(pos[0],pos[1], images.bases[i])
-	# Add the tanks hp bar
-	tank.hp_vis += [gameobjects.HP(pos[0]-0.2, pos[1]+0.25)]
-	tank.hp_vis += [gameobjects.HP(pos[0]+0.2, pos[1]+0.25)]
-	# Add the tank to the list of objects to display
-	game_objects_list.append(tank)
-	game_objects_list.append(base)
-	"""
-	tank.hp_vis += [hp1]
-	tank.hp_vis += [hp2]
-	"""
-	for hp in tank.hp_vis:
-		game_objects_list.append(hp)
-		
-
-	
-
-	# Add the tank to the list of tanks
-	tanks_list.append(tank)
-	# Add the bases gameobjects
-
-	#Add ai
-	if i > 0:
-		ais.append(ai.SimpleAi(tanks_list[i], game_objects_list, tanks_list, space))
-	
-# Collision handlers ----START----
 
 space.add_collision_handler(0, 1, None, tank_hit)
 space.add_collision_handler(0, 2, None, box_hit)
-space.add_collision_handler(0, 7, None, rock_hit)
 space.add_collision_handler(0, 10, None, other_hit)
-# Collision handlers ----END----
+
+#space.add_collision_handler(0, 3, None, rock_hit)
+# Collision handlers and functions ----END----
 
 
 
 #----- Main Loop -----#
 
-#-- Control whether the game run
+#-- Control whether the game should run
 running = True
 exp_start = 0
 start = 0
 skip_update = 0
-game_objects_list.append(tanks_list[0].oh)
+
 while running:
 	#-- Handle the events
 	for event in pygame.event.get():
@@ -307,22 +241,21 @@ while running:
 		elif event.type == KEYUP and event.key == K_RIGHT:
 			gameobjects.Tank.stop_turning(tanks_list[0])
 		if event.type == KEYDOWN and event.key == K_RETURN:
-			if not tanks_list[0].start or time.time() > tanks_list[0].start + 2:
-				game_objects_list.append(gameobjects.Tank.shoot(tanks_list[0], space)[0])
-	#		if not start or time.time() > start + 2:
-#
-#				m = gameobjects.Tank.shoot(tanks_list[0], space)
-#				missile_list.append(m)
-#				game_objects_list.append(m)
-#				start = time.time()
-	
+			#if not tanks_list[0].start or time.time() > tanks_list[0].start + 2:
+			game_objects_list.append(gameobjects.Tank.shoot(tanks_list[0], space)[0])
+			#if tank.is_overheated:
+			if not tanks_list[0].hp_vis[0] in game_objects_list:
+				game_objects_list.append(tanks_list[0].hp_vis[0])
+				game_objects_list.append(tanks_list[0].hp_vis[1])
+
+
 	if tank_exp_list and tank_exp_list[0]():
 		tank_exp_list.pop(0)
 
 
 	for tank in tanks_list:
 		if tank.is_overheated and time.time() > tank.start + 2:
-			gameobjects.Tank.overheat(tank, False)
+			tank.is_overheated = False
 
 
 	if(skip_update == 0):
@@ -336,7 +269,6 @@ while running:
 
 	#   Check collisions and update the objects position
 	space.step(1 / framerate)
-
 
 
 	for i in range(len(tanks_list)):
@@ -359,8 +291,6 @@ while running:
 		# For each object, simply call the "update_screen" function
 		if default_pos(obj) != obj:
 			obj.update_screen(screen)
-
-
 
 	#   Redisplay the entire screen (see double buffer technique)
 	pygame.display.flip()

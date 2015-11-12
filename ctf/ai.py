@@ -139,12 +139,10 @@ class SimpleAi(Ai):
       # Use chipmunk raycasting to get if there is an object in front of the tank
       
       obj = self.get_object_in_direction(10, 0)
-      if(obj != None and (not self.tank.start or time.time() > self.tank.start + 2)):
-        if hasattr(obj,  'boxmodel') and obj.boxmodel.destructable:
+      if(obj != None and not self.tank.is_overheated):
+        #(not self.tank.start or time.time() > (self.tank.start + 2))):
+        if hasattr(obj,  'boxmodel') and obj.boxmodel.destructable or self.is_object_tank(obj):
           # it is a wooden box, lets clear the way
-          m = gameobjects.Tank.shoot(self.tank, self.space)[0]
-          self.game_objects_list.append(m)
-        if self.is_object_tank(obj):
           # it is an other tank, shoot
           m = gameobjects.Tank.shoot(self.tank, self.space)[0]
           self.game_objects_list.append(m)
