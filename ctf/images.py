@@ -24,10 +24,14 @@ missile = load_image('missile.png')
 # Image of an explosion
 explosion = load_image('explosion.png')
 
-# Image of overheat
-overheat = load_image('overheat.png')
 # Image of a small explosion
 small_explosion = load_image('small_explosion.png')
+
+# Image of overheat
+overheat = load_image('overheat.png')
+
+# Image of deathtext 1
+player1_dead = load_image('kills/player1_was_killed.png')
 
 # Image of a grass tile
 grass     = load_image('grass.png')

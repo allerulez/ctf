@@ -1,6 +1,7 @@
 import pygame
 import time	
 import math
+import os
 from pygame.locals import *
 from pygame.color import *
 import pymunk as pm
@@ -36,13 +37,12 @@ game_objects_list   = []
 game_objects_def_pos_list = []
 tanks_list          = []
 ais 				= []
-#missile_list		= []
 box_dict			= {}
 exp_list			= []
 exp_time			= []
 tank_exp_list		= []
 #-- Resize the screen to the size of the current level
-screen = pygame.display.set_mode(current_map.rect().size)
+screen = pygame.display.set_mode(current_map.rect().size,HWSURFACE|DOUBLEBUF|RESIZABLE)
 
 # --- Fence around the map START ---
 nw_box = pm.Body()
@@ -167,6 +167,13 @@ def tank_hit(space, arb):
 			tank_exp_list.append(tank_explosion(arb.shapes[1].parent, images.small_explosion))
 			game_objects_list.remove(arb.shapes[1].parent.hp_vis[0])
 		elif arb.shapes[1].parent.hp == 0:
+			if arb.shapes[1].parent == tanks_list[0]:
+				"""
+				FORTSÄTT HÄR ERA PLEBS
+				LOOKING AT YOU ALEKSI
+				"""
+				player_dead = gameobjects.GameVisibleObject(arb.shapes[1].parent.x_pos,arb.shapes[1].parent.y_pos, images.player1_dead)
+				game_objects_list.append(player_dead)
 			if arb.shapes[1].parent.flag != None:
 				flag_x = arb.shapes[1].parent.x_pos
 				flag_y = arb.shapes[1].parent.y_pos
@@ -175,8 +182,6 @@ def tank_hit(space, arb):
 			tank_exp_list.append(tank_explosion(arb.shapes[1].parent, images.explosion))
 			arb.shapes[1].parent.body.position = arb.shapes[1].parent.start_position
 			arb.shapes[1].parent.hp = 2
-			game_objects_list.append(arb.shapes[1].parent.hp_vis[0])
-			arb.shapes[1].parent.body.position = arb.shapes[1].parent.start_position
 		if arb.shapes[0].parent in game_objects_list:
 			space.add_post_step_callback(space.remove, arb.shapes[0], arb.shapes[0].body)
 			game_objects_list.remove(arb.shapes[0].parent)
@@ -243,11 +248,19 @@ while running:
 		if event.type == KEYDOWN and event.key == K_RETURN:
 			#if not tanks_list[0].start or time.time() > tanks_list[0].start + 2:
 			game_objects_list.append(gameobjects.Tank.shoot(tanks_list[0], space)[0])
-			#if tank.is_overheated:
-			if not tanks_list[0].hp_vis[0] in game_objects_list:
-				game_objects_list.append(tanks_list[0].hp_vis[0])
-				game_objects_list.append(tanks_list[0].hp_vis[1])
+#		if event.type == KEYDOWN and event.key == K_SPACE:
+#			screen2 = screen
+#			screen = pygame.display.set_mode((1000, 1000),RESIZABLE)
+#			pygame.transform.scale(screen2, (1000, 1000), screen)
+#			pygame.display.flip()
 
+
+	for tank in tanks_list:
+		if tank.hp == 2 and not tank.hp_vis[0] in game_objects_list:
+			game_objects_list.append(tank.hp_vis[0])
+		if tank.hp == 1 and tank.hp_vis[0] in game_objects_list:
+			game_objects_list.remove(tank.hp_vis[0])
+			
 
 	if tank_exp_list and tank_exp_list[0]():
 		tank_exp_list.pop(0)
