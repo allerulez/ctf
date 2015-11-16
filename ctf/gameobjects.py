@@ -23,6 +23,7 @@ class GameObject:
   def __init__(self, sprite):
     self.sprite         = sprite
 
+
   #
   # This function is called for objects to update their state.
   #
@@ -154,7 +155,7 @@ class Tank(GamePhysicsObject):
     self.maximum_speed        = 1.0
     self.x_pos                = x
     self.y_pos                = y
-    self.sprite               = sprite
+    self.sprite               = pygame.transform.scale(sprite,(sprite.get_width()*images.IM_SCALE, sprite.get_height()*images.IM_SCALE))
     self.shape.collision_type = 1
     self.hp                   = 2
     self.hp_vis               = []
@@ -261,9 +262,11 @@ class Tank(GamePhysicsObject):
     self.velocity = -1
     Tank.update(missile)
     if self.is_overheated:
+      self.flag = None
       self.body.position[0] = self.start_position[0]
       self.body.position[1] = self.start_position[1]
       self.is_overheated = False
+      self.maximum_speed = 1
       self.hp = 2
       return (missile, self.start, self)
     self.is_overheated = True
@@ -278,7 +281,7 @@ class Box(GamePhysicsObject):
   #
   def __init__(self, x, y, boxmodel, space):
     self.boxmodel = boxmodel
-    GamePhysicsObject.__init__(self, x, y, 0, self.boxmodel.sprite, space, self.boxmodel.movable)
+    GamePhysicsObject.__init__(self, x, y, 0, pygame.transform.scale(self.boxmodel.sprite,(images.TILE_SIZE, images.TILE_SIZE)), space, self.boxmodel.movable)
     self.shape.collision_type = 10
     self.hp                   = -1
     self.x_pos                = x
@@ -308,11 +311,11 @@ class GameVisibleObject(GameObject):
 class Flag(GameVisibleObject):
   def __init__(self, x, y):
     self.is_on_tank   = False
-    GameVisibleObject.__init__(self, x, y,  images.flag)
+    GameVisibleObject.__init__(self, x, y,  pygame.transform.scale(images.flag, (images.TILE_SIZE, images.TILE_SIZE)))
 
 class HP(GameVisibleObject):
   def __init__(self, x, y):
-    GameVisibleObject.__init__(self, x, y,  images.hp)
+    GameVisibleObject.__init__(self, x, y,  pygame.transform.scale(images.hp, (10*images.IM_SCALE,10*images.IM_SCALE)))
 
 class Missile(GamePhysicsObject):
   def __init__(self, x, y, orientation, sprite, space, tank):

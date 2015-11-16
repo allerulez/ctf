@@ -14,9 +14,12 @@ def load_image(file):
     except pygame.error:
         raise SystemExit('Could not load image "%s" %s'%(file, pygame.get_error()))
     return surface.convert_alpha()
+# Define the window's scale
+IM_SCALE = 2
 
 # Define the default size of tiles
-TILE_SIZE = 40
+TILE_SIZE = 40*IM_SCALE
+
 
 # Image of a missile
 missile = load_image('missile.png')

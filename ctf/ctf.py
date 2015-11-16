@@ -2,6 +2,7 @@ import pygame
 import time	
 import math
 import os
+import argparse
 from pygame.locals import *
 from pygame.color import *
 import pymunk as pm
@@ -10,7 +11,7 @@ import pymunk as pm
 
 #-- Initialise the display
 pygame.init()
-pygame.display.set_mode()
+pygame.display.set_mode((600,800), RESIZABLE)
 
 #-- Initialise the clock
 clock = pygame.time.Clock()
@@ -30,8 +31,6 @@ import maps
 #-- Constants
 framerate = 60
 #-- Variables
-#   Define the current level
-current_map         = maps.map0
 #   List of all game objects
 game_objects_list   = []
 game_objects_def_pos_list = []
@@ -39,8 +38,70 @@ tanks_list          = []
 ais 				= []
 box_dict			= {}
 exp_list			= []
+text_list 			= []
 exp_time			= []
 tank_exp_list		= []
+text_surf_list 		= []
+text_rect_list 		= []
+dead_start_list 	= []
+current_map 		= []
+#   Define the current level
+pygame.display.set_caption('Capture the Flag')
+screen_x = 800
+screen_y = 600
+#font_x 	= screen_x/2
+#font_y  = screen_y/2
+font_size = 115
+text_font = 'freesansbold.ttf'
+text_y = 115
+map_nr = 1
+screen = pygame.display.set_mode((screen_x,screen_y), RESIZABLE)
+def text_objects(text, font, color = (255,255,255, 1)):
+    textSurface = font.render(text, True, color)
+    return textSurface, textSurface.get_rect()
+
+#def make_stuff(screen_x, text_y, map_nr, color = (255,255,255, 1)):
+map_nr = 1
+for i in maps.maps_list:
+	largeText = pygame.font.Font(text_font, font_size)
+	TextSurf, TextRect = text_objects("Play map: " + str(map_nr), largeText)
+	TextRect.center = ((screen_x/2), text_y)
+	text_surf_list.append(TextSurf)
+	text_rect_list.append(TextRect)
+	text_y += 115
+	map_nr += 1
+	screen.blit(TextSurf, TextRect)
+map_nr = 1
+#make_stuff(screen_x, text_y, map_nr)
+
+start_menu = True
+while start_menu == True:
+	for event in pygame.event.get():
+		if event.type == pygame.QUIT or (event.type == KEYDOWN and event.key == K_ESCAPE):
+			start_menu = False
+			pygame.quit()
+			quit()
+		for TextRect in text_rect_list:
+			index = text_rect_list.index(TextRect)
+			mouse = pygame.mouse.get_pos()
+			if TextRect.collidepoint(mouse):
+				#make_stuff(screen_x, text_y, map_nr, (130,130,0,1))
+				#text_surf_list[index] = largeText.render(("Play map: " + str(map_nr)), True, (150,150,150,1))
+				#text_surf_list[index].fill((230,230,20), text_rect_list[index])
+				screen.blit(text_surf_list[index], text_rect_list[index])
+				if event.type == pygame.MOUSEBUTTONDOWN:
+					 #screen_x > mouse[0] > 0 and (screen_y + font_size)/2 > mouse[1] > (screen_y - font_size)/2:
+					start_menu = False
+					current_map = maps.maps_list[index]
+			#make_stuff(screen_x, text_y, map_nr)
+		#	else: 
+			#	text_surf_list[index].
+	pygame.display.update()
+
+
+
+
+
 #-- Resize the screen to the size of the current level
 screen = pygame.display.set_mode(current_map.rect().size,HWSURFACE|DOUBLEBUF|RESIZABLE)
 
@@ -69,7 +130,8 @@ for x in range(0, current_map.width):
 	for y in range(0, current_map.height):
 		# The call to the function "blit" will copy the image contained in "images.grass"
 		# into the "background" image at the coordinates given as the secnod argument
-		background.blit(images.grass, (x*images.TILE_SIZE, y*images.TILE_SIZE))
+		grass = pygame.transform.scale(images.grass,(images.TILE_SIZE, images.TILE_SIZE))
+		background.blit(grass, (x*images.TILE_SIZE, y*images.TILE_SIZE))
 
 
 # --- Creation of objects START ---
@@ -100,8 +162,6 @@ for x in range(0, current_map.width):
 			elif box_type == 1:				
 				box.shape.collision_type = 10
 				box.hp = 3
-
-
 			game_objects_list.append(box)
 			box_dict[(x+0.5, y+0.5)] = box
 
@@ -172,8 +232,11 @@ def tank_hit(space, arb):
 				FORTSÄTT HÄR ERA PLEBS
 				LOOKING AT YOU ALEKSI
 				"""
-				player_dead = gameobjects.GameVisibleObject(arb.shapes[1].parent.x_pos,arb.shapes[1].parent.y_pos, images.player1_dead)
+				global current_map
+				player_dead = gameobjects.GameVisibleObject(current_map.width/2,current_map.height/2 , images.player1_dead)
+				dead_start_list.append(time.time())
 				game_objects_list.append(player_dead)
+				text_list.append(player_dead)
 			if arb.shapes[1].parent.flag != None:
 				flag_x = arb.shapes[1].parent.x_pos
 				flag_y = arb.shapes[1].parent.y_pos
@@ -270,6 +333,9 @@ while running:
 		if tank.is_overheated and time.time() > tank.start + 2:
 			tank.is_overheated = False
 
+	if dead_start_list and time.time() > dead_start_list[0] + 1:
+		game_objects_list.remove(text_list.pop(0))
+		dead_start_list.pop(0)
 
 	if(skip_update == 0):
 	  # Loop over all the game objects and update their speed in function of their
