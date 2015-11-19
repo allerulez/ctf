@@ -3,6 +3,7 @@ import time
 import math
 import os
 import argparse
+import random
 from pygame.locals import *
 from pygame.color import *
 import pymunk as pm
@@ -43,8 +44,12 @@ exp_time			= []
 tank_exp_list		= []
 text_surf_list 		= []
 text_rect_list 		= []
+player_text_surf_list=[]
+player_text_rect_list=[]
 dead_start_list 	= []
 current_map 		= []
+portal_list 		= []
+players 			= 0
 #   Define the current level
 pygame.display.set_caption('Capture the Flag')
 screen_x = 800
@@ -55,12 +60,43 @@ font_size = 115
 text_font = 'freesansbold.ttf'
 text_y = 115
 map_nr = 1
-screen = pygame.display.set_mode((screen_x,screen_y), RESIZABLE)
+screen = pygame.display.set_mode((screen_x,screen_y))
+
 def text_objects(text, font, color = (255,255,255, 1)):
     textSurface = font.render(text, True, color)
     return textSurface, textSurface.get_rect()
 
-#def make_stuff(screen_x, text_y, map_nr, color = (255,255,255, 1)):
+for i in range(2):
+	player_largeText = pygame.font.Font(text_font, int(font_size*0.6))
+	player_TextSurf, player_TextRect = text_objects("number of players: " + str(players), player_largeText)
+	player_TextRect.center = ((screen_x/2), text_y)
+	player_text_surf_list.append(player_TextSurf)
+	player_text_rect_list.append(player_TextRect)
+	text_y += 115
+	players += 1
+	screen.blit(player_TextSurf, player_TextRect)
+players = 1
+
+choose_players = True
+while choose_players == True:
+	for event in pygame.event.get():
+		if event.type == pygame.QUIT or (event.type == KEYDOWN and event.key == K_ESCAPE):
+			choose_players = False
+			pygame.quit()
+			quit()
+		for player_TextRect in player_text_rect_list:
+			index = player_text_rect_list.index(player_TextRect)
+			mouse = pygame.mouse.get_pos()
+			if player_TextRect.collidepoint(mouse):
+				screen.blit(player_text_surf_list[index], player_text_rect_list[index])
+				if event.type == pygame.MOUSEBUTTONDOWN:
+					choose_players = False
+			if event.type == KEYDOWN and event.key == (index+48):
+				players = int(index)
+				choose_players = False
+	pygame.display.update()
+
+
 map_nr = 1
 for i in maps.maps_list:
 	largeText = pygame.font.Font(text_font, font_size)
@@ -72,7 +108,7 @@ for i in maps.maps_list:
 	map_nr += 1
 	screen.blit(TextSurf, TextRect)
 map_nr = 1
-#make_stuff(screen_x, text_y, map_nr)
+
 
 start_menu = True
 while start_menu == True:
@@ -93,6 +129,9 @@ while start_menu == True:
 					 #screen_x > mouse[0] > 0 and (screen_y + font_size)/2 > mouse[1] > (screen_y - font_size)/2:
 					start_menu = False
 					current_map = maps.maps_list[index]
+			if event.type == KEYDOWN and event.key == (index+49):
+				start_menu = False
+				current_map = maps.maps_list[index]
 			#make_stuff(screen_x, text_y, map_nr)
 		#	else: 
 			#	text_surf_list[index].
@@ -103,7 +142,7 @@ while start_menu == True:
 
 
 #-- Resize the screen to the size of the current level
-screen = pygame.display.set_mode(current_map.rect().size,HWSURFACE|DOUBLEBUF|RESIZABLE)
+screen = pygame.display.set_mode(current_map.rect().size)
 
 # --- Fence around the map START ---
 nw_box = pm.Body()
@@ -162,6 +201,11 @@ for x in range(0, current_map.width):
 			elif box_type == 1:				
 				box.shape.collision_type = 10
 				box.hp = 3
+			elif box_type == 5:
+				box.shape.collision_type = 4
+				points  = [[-0, -0], [-0, 0],[0, 0],[0, -0]]
+				box.shape = pm.Poly(box.body, points)
+				portal_list.append(box)
 			game_objects_list.append(box)
 			box_dict[(x+0.5, y+0.5)] = box
 
@@ -174,7 +218,8 @@ for i in range(0, len(current_map.start_positions)):
 	# Create the tank, images.tank contains the image
 	tank = gameobjects.Tank(pos[0], pos[1], pos[2], images.tanks[i], space)
 	# Add the tanks base to the map and game_objects_list
-	base = gameobjects.GameVisibleObject(pos[0],pos[1], images.bases[i])
+	base = gameobjects.GameVisibleObject(pos[0],pos[1], pygame.transform.scale(images.bases[i], \
+		(images.bases[i].get_width()*images.IM_SCALE, images.bases[i].get_height()*images.IM_SCALE)))
 	# Add the tanks hp bar
 	tank.hp_vis += [gameobjects.HP(pos[0]-0.2, pos[1]+0.25)]
 	tank.hp_vis += [gameobjects.HP(pos[0]+0.2, pos[1]+0.25)]
@@ -189,7 +234,7 @@ for i in range(0, len(current_map.start_positions)):
 	game_objects_list.append(tanks_list[i].oh)
 
 	#Add ai
-	if i > 0:
+	if i > (players-1):
 		ais.append(ai.SimpleAi(tanks_list[i], game_objects_list, tanks_list, space))
 
 # This function call creates a new flag object at coordinates x, y
@@ -206,7 +251,7 @@ def default_pos(tile):
 
 def tank_explosion(tank_or_box, image):
 	tank_pos = tank_or_box.body.position
-	exp = gameobjects.GameVisibleObject(tank_pos[0] , tank_pos[1], image)
+	exp = gameobjects.GameVisibleObject(tank_pos[0] , tank_pos[1], pygame.transform.scale(image, (image.get_height()*images.IM_SCALE, image.get_width()*images.IM_SCALE)))
 	exp_list.append(exp)
 	exp_start = time.time()
 	exp_time.append(exp_start)
@@ -220,6 +265,16 @@ def tank_explosion(tank_or_box, image):
 		return False
 	return remove_explosion
 
+def missile_hit(space, arb):
+	tank_exp_list.append(tank_explosion(arb.shapes[1].parent, images.small_explosion))
+	if arb.shapes[0].parent in game_objects_list:
+			space.add_post_step_callback(space.remove, arb.shapes[0], arb.shapes[0].body)
+			game_objects_list.remove(arb.shapes[0].parent)
+	if arb.shapes[1].parent in game_objects_list:
+			space.add_post_step_callback(space.remove, arb.shapes[1], arb.shapes[1].body)
+			game_objects_list.remove(arb.shapes[1].parent)
+	return 1
+
 def tank_hit(space, arb):
 	if not arb.shapes[1].parent == arb.shapes[0].parent.tank:
 		arb.shapes[1].parent.hp -= 1
@@ -227,16 +282,13 @@ def tank_hit(space, arb):
 			tank_exp_list.append(tank_explosion(arb.shapes[1].parent, images.small_explosion))
 			game_objects_list.remove(arb.shapes[1].parent.hp_vis[0])
 		elif arb.shapes[1].parent.hp == 0:
-			if arb.shapes[1].parent == tanks_list[0]:
-				"""
-				FORTSÄTT HÄR ERA PLEBS
-				LOOKING AT YOU ALEKSI
-				"""
-				global current_map
-				player_dead = gameobjects.GameVisibleObject(current_map.width/2,current_map.height/2 , images.player1_dead)
-				dead_start_list.append(time.time())
-				game_objects_list.append(player_dead)
-				text_list.append(player_dead)
+			global current_map
+			for index in range(len(tanks_list)):
+				if 	tanks_list[index].hp == 0:
+					player_dead = gameobjects.GameVisibleObject(current_map.width/2,current_map.height/2 , images.was_killed[index])
+					dead_start_list.append(time.time())
+					game_objects_list.append(player_dead)
+					text_list.append(player_dead)
 			if arb.shapes[1].parent.flag != None:
 				flag_x = arb.shapes[1].parent.x_pos
 				flag_y = arb.shapes[1].parent.y_pos
@@ -244,6 +296,7 @@ def tank_hit(space, arb):
 				flag = gameobjects.Flag(flag_x, flag_y)	
 			tank_exp_list.append(tank_explosion(arb.shapes[1].parent, images.explosion))
 			arb.shapes[1].parent.body.position = arb.shapes[1].parent.start_position
+			arb.shapes[1].parent.body.angle = arb.shapes[1].parent.start_orientation
 			arb.shapes[1].parent.hp = 2
 		if arb.shapes[0].parent in game_objects_list:
 			space.add_post_step_callback(space.remove, arb.shapes[0], arb.shapes[0].body)
@@ -261,6 +314,15 @@ def box_hit(space, arb):
 		game_objects_list.remove(arb.shapes[0].parent)
 	return 1
 
+def tank_portal(space, arb):
+	if not arb.shapes[0].parent.is_portal_cd:
+		pos = random.choice(portal_list)
+		arb.shapes[0].parent.body.position = pm.Vec2d(pos.x_pos, pos.y_pos)
+		arb.shapes[0].parent.is_portal_cd = True
+
+		#tank.portal_time = 0
+	return 1
+
 def other_hit(space, arb):
 	if arb.shapes[0].parent in game_objects_list:
 		tank_exp_list.append(tank_explosion(arb.shapes[0].parent, images.small_explosion))
@@ -268,10 +330,12 @@ def other_hit(space, arb):
 		game_objects_list.remove(arb.shapes[0].parent)
 	return 1
 
+space.add_collision_handler(0, 0, None, missile_hit)
 space.add_collision_handler(0, 1, None, tank_hit)
 space.add_collision_handler(0, 2, None, box_hit)
+space.add_collision_handler(1, 4, None, tank_portal)
 space.add_collision_handler(0, 10, None, other_hit)
-
+space.add_collision_handler(0, 4, None, other_hit)
 #space.add_collision_handler(0, 3, None, rock_hit)
 # Collision handlers and functions ----END----
 
@@ -292,30 +356,37 @@ while running:
 		# close button of the window) or if the user press the escape key.
 		if event.type == QUIT or (event.type == KEYDOWN and event.key == K_ESCAPE):
 			running = False
-		if event.type == KEYDOWN and event.key == K_UP:
-			gameobjects.Tank.accelerate(tanks_list[0])
-		elif event.type == KEYUP and event.key == K_UP:
-			gameobjects.Tank.stop_moving(tanks_list[0])
-		if event.type == KEYDOWN and event.key == K_DOWN:
-			gameobjects.Tank.decelerate(tanks_list[0])
-		elif event.type == KEYUP and event.key == K_DOWN:
-			gameobjects.Tank.stop_moving(tanks_list[0])
-		if event.type == KEYDOWN and event.key == K_LEFT:
-			gameobjects.Tank.turn_left(tanks_list[0])
-		elif event.type == KEYUP and event.key == K_LEFT:
-			gameobjects.Tank.stop_turning(tanks_list[0])
-		if event.type == KEYDOWN and event.key == K_RIGHT:
-			gameobjects.Tank.turn_right(tanks_list[0])
-		elif event.type == KEYUP and event.key == K_RIGHT:
-			gameobjects.Tank.stop_turning(tanks_list[0])
-		if event.type == KEYDOWN and event.key == K_RETURN:
-			#if not tanks_list[0].start or time.time() > tanks_list[0].start + 2:
-			game_objects_list.append(gameobjects.Tank.shoot(tanks_list[0], space)[0])
-#		if event.type == KEYDOWN and event.key == K_SPACE:
-#			screen2 = screen
-#			screen = pygame.display.set_mode((1000, 1000),RESIZABLE)
-#			pygame.transform.scale(screen2, (1000, 1000), screen)
-#			pygame.display.flip()
+		if players:	
+			if event.type == KEYDOWN and event.key == K_UP:
+				gameobjects.Tank.accelerate(tanks_list[0])
+			elif event.type == KEYUP and event.key == K_UP:
+				gameobjects.Tank.stop_moving(tanks_list[0])
+			if event.type == KEYDOWN and event.key == K_DOWN:
+				gameobjects.Tank.decelerate(tanks_list[0])
+			elif event.type == KEYUP and event.key == K_DOWN:
+				gameobjects.Tank.stop_moving(tanks_list[0])
+			if event.type == KEYDOWN and event.key == K_LEFT:
+				gameobjects.Tank.turn_left(tanks_list[0])
+			elif event.type == KEYUP and event.key == K_LEFT:
+				gameobjects.Tank.stop_turning(tanks_list[0])
+			if event.type == KEYDOWN and event.key == K_RIGHT:
+				gameobjects.Tank.turn_right(tanks_list[0])
+			elif event.type == KEYUP and event.key == K_RIGHT:
+				gameobjects.Tank.stop_turning(tanks_list[0])
+			if event.type == KEYDOWN and event.key == K_RETURN:
+				#if not tanks_list[0].start or time.time() > tanks_list[0].start + 2:
+				if tanks_list[0].is_overheated:
+					player_dead = gameobjects.GameVisibleObject(current_map.width/2,current_map.height/2 , images.player1_dead)
+					dead_start_list.append(time.time())
+					game_objects_list.append(player_dead)
+					text_list.append(player_dead)
+				game_objects_list.append(gameobjects.Tank.shoot(tanks_list[0], space)[0])
+
+	#		if event.type == KEYDOWN and event.key == K_SPACE:
+	#			screen2 = screen
+	#			screen = pygame.display.set_mode((1000, 1000),RESIZABLE)
+	#			pygame.transform.scale(screen2, (1000, 1000), screen)
+	#			pygame.display.flip()
 
 
 	for tank in tanks_list:
@@ -332,6 +403,9 @@ while running:
 	for tank in tanks_list:
 		if tank.is_overheated and time.time() > tank.start + 2:
 			tank.is_overheated = False
+		if tank.is_portal_cd and time.time() > tank.portal_time + 5:
+			tank.is_portal_cd = False
+			tank.portal_time = time.time()
 
 	if dead_start_list and time.time() > dead_start_list[0] + 1:
 		game_objects_list.remove(text_list.pop(0))
@@ -351,11 +425,11 @@ while running:
 
 
 	for i in range(len(tanks_list)):
-                gameobjects.Tank.try_grab_flag(tanks_list[i], flag)
-                if gameobjects.Tank.has_won(tanks_list[i]):
-                        running = False
-                if i < len(tanks_list)-1:
-                        ai.SimpleAi.decide(ais[i])
+		gameobjects.Tank.try_grab_flag(tanks_list[i], flag)
+		if gameobjects.Tank.has_won(tanks_list[i]):
+			running = False
+		if i < len(tanks_list)-players:
+			ai.SimpleAi.decide(ais[i])
 
 	#   Update object that depends on an other object position (for instance a flag)
 	for obj in game_objects_list:

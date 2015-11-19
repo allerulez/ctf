@@ -96,6 +96,7 @@ class GamePhysicsObject(GameObject):
                            [half_width, half_height],
                            [half_width, -half_height]]
     # Create a body (which is the physical representation of this game object in the physic engine)
+
     if(movable):
       # Create a movable object with some mass and moments
       # (considering the game is a top view game, with no gravity,
@@ -142,29 +143,33 @@ def clamp (minval, val, maxval):
 #
 class Tank(GamePhysicsObject):
   def __init__(self, x, y, orientation, sprite, space):
+    sprite = pygame.transform.scale(sprite, (int(images.TILE_SIZE//1.7), int(images.TILE_SIZE//1.7)))
     GamePhysicsObject.__init__(self, x, y, orientation, sprite, space, True)
     # Define variable used to apply motion to the tanks
     self.acceleration         = 0.0
     self.velocity             = 0.0
     self.angular_acceleration = 0.0
     self.angular_velocity     = 0.0
-    self.orientation = orientation
+    self.orientation          = orientation
     # This variable is used to access the flag object, if the current tank is carrying the flag
     self.flag                 = None
     # Impose a maximum speed to the tank
     self.maximum_speed        = 1.0
     self.x_pos                = x
     self.y_pos                = y
-    self.sprite               = pygame.transform.scale(sprite,(sprite.get_width()*images.IM_SCALE, sprite.get_height()*images.IM_SCALE))
+    self.sprite               = sprite #pygame.transform.scale(sprite,(sprite.get_width()*images.IM_SCALE, sprite.get_height()*images.IM_SCALE))
     self.shape.collision_type = 1
     self.hp                   = 2
     self.hp_vis               = []
     self.start                = 0
     self.is_overheated        = False
-    self.oh                   = GameVisibleObject(self.x_pos, self.y_pos, images.overheat)
+    self.is_portal_cd         = False
+    self.portal_time          = 0
+    self.oh                   = GameVisibleObject(self.x_pos, self.y_pos, pygame.transform.scale(images.overheat,(images.TILE_SIZE, images.TILE_SIZE)))
     
     # Define the start position, which is also the position where the tank has to return with the flag
     self.start_position       = pymunk.Vec2d(self.x_pos, self.y_pos)
+    self.start_orientation    = orientation
   
 
   # Call this function to accelerate forward the tank
@@ -265,6 +270,7 @@ class Tank(GamePhysicsObject):
       self.flag = None
       self.body.position[0] = self.start_position[0]
       self.body.position[1] = self.start_position[1]
+      self.body.angle = self.start_orientation
       self.is_overheated = False
       self.maximum_speed = 1
       self.hp = 2
@@ -329,5 +335,6 @@ class Missile(GamePhysicsObject):
     self.angular_velocity     = 0.0
     self.maximum_speed        = 10.0
     self.shape.collision_type = 0
+    self.sprite               = pygame.transform.scale(sprite, (images.TILE_SIZE//2, images.TILE_SIZE//2))
     # Define the start position, which is the position of the shooting tank
     self.start_position       = pymunk.Vec2d(x, y)

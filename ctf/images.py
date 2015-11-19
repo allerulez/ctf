@@ -14,6 +14,8 @@ def load_image(file):
     except pygame.error:
         raise SystemExit('Could not load image "%s" %s'%(file, pygame.get_error()))
     return surface.convert_alpha()
+
+
 # Define the window's scale
 IM_SCALE = 2
 
@@ -34,7 +36,7 @@ small_explosion = load_image('small_explosion.png')
 overheat = load_image('overheat.png')
 
 # Image of deathtext 1
-player1_dead = load_image('kills/player1_was_killed.png')
+player1_dead = load_image('kills/player1_died_to_oh.png')
 
 # Image of a grass tile
 grass     = load_image('grass.png')
@@ -48,10 +50,18 @@ metalbox  = load_image('metalbox.png')
 # Image of a wood box
 woodbox   = load_image('woodbox.png')
 
+# Image of a portal
+portal	  = load_image('portal.png')
+
 # Image of flag
 flag      = load_image('flag.png')
 
 hp		  = load_image('hp.png')
+
+
+was_killed = [load_image('kills/player1_was_killed.png'), load_image('kills/player2_was_killed.png'), load_image('kills/player3_was_killed.png'),
+			 load_image('kills/player4_was_killed.png'), load_image('kills/player5_was_killed.png'), load_image('kills/player6_was_killed.png')]
+
 
 # List of image of tanks of different colors
 tanks     = [load_image('tank_orange.png'), load_image('tank_blue.png'), load_image('tank_white.png'),

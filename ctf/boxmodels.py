@@ -21,6 +21,8 @@ rockbox  = BoxModel(images.rockbox,  False, False)
 
 rockbox_mov = BoxModel(images.rockbox, True, True)
 
+portal = BoxModel(images.portal, False, False)
+
 # This function is used to select the model of a box in function of a number.
 # It is mostly used when initializing the boxes from the information contained
 # in the map.
@@ -36,5 +38,7 @@ def get_model(type):
     return metalbox
   elif(type == 4):
     return rockbox_mov
+  elif(type == 5):
+    return portal
   else:
     return None

@@ -1,6 +1,7 @@
 import math
 import pymunk
 import gameobjects
+import boxmodels
 import time
 
 #
@@ -131,7 +132,7 @@ class SimpleAi(Ai):
     self.should_turn        = False
     self.start              = 0
   def decide(self):
-    
+
     if(self.last_shot == 0):
       self.last_shot = 20
       # Check if we should shoot
@@ -149,6 +150,11 @@ class SimpleAi(Ai):
     
     self.last_shot -= 1
     
+    if not self.tank.is_portal_cd:
+      obj = self.get_object_in_direction(5, 0)
+      if (hasattr(obj, 'boxmodel')  and obj.boxmodel == boxmodels.portal):
+        self.tank.accelerate 
+
     # Test if the tank is blocked
     
     if( (self.last_position - self.tank.body.position).get_length() < 0.01 and math.cos(self.tank.body.angle - self.last_angle) > 0.995 ):
@@ -189,7 +195,7 @@ class SimpleAi(Ai):
       #
       # Check that there is no obstacle in front. Or if there is an obstacle that it is a box that can be moved.
       #
-      if(not self.should_turn and (not self.has_object_in_direction(0.5, 0) or (obj != None and self.is_object_movable(obj) and not self.is_object_tank(obj) ))):
+      if(not self.should_turn and (not self.has_object_in_direction(0.5, 0) or (hasattr(obj, 'boxmodel')  and obj.boxmodel == boxmodels.portal) or (obj != None and self.is_object_movable(obj) and not self.is_object_tank(obj) ))):
         self.tank.accelerate()
       else:
         self.should_turn = False
