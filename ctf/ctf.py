@@ -46,6 +46,7 @@ text_surf_list 		= []
 text_rect_list 		= []
 player_text_surf_list=[]
 player_text_rect_list=[]
+score_surf_list		= []
 dead_start_list 	= []
 current_map 		= []
 portal_list 		= []
@@ -75,8 +76,9 @@ for i in range(2):
 	text_y += 115
 	players += 1
 	screen.blit(player_TextSurf, player_TextRect)
-players = 1
 
+players = 1
+text_y = 115
 choose_players = True
 while choose_players == True:
 	for event in pygame.event.get():
@@ -96,6 +98,7 @@ while choose_players == True:
 				choose_players = False
 	pygame.display.update()
 
+screen.fill((0,0,0,1))
 
 map_nr = 1
 for i in maps.maps_list:
@@ -282,6 +285,8 @@ def tank_hit(space, arb):
 			tank_exp_list.append(tank_explosion(arb.shapes[1].parent, images.small_explosion))
 			game_objects_list.remove(arb.shapes[1].parent.hp_vis[0])
 		elif arb.shapes[1].parent.hp == 0:
+			arb.shapes[0].parent.tank.score_inc()
+			arb.shapes[1].parent.score_red()
 			global current_map
 			for index in range(len(tanks_list)):
 				if 	tanks_list[index].hp == 0:
@@ -348,7 +353,7 @@ running = True
 exp_start = 0
 start = 0
 skip_update = 0
-
+score_text = pygame.font.SysFont(text_font, 30)
 while running:
 	#-- Handle the events
 	for event in pygame.event.get():
@@ -399,13 +404,24 @@ while running:
 	if tank_exp_list and tank_exp_list[0]():
 		tank_exp_list.pop(0)
 
-
 	for tank in tanks_list:
 		if tank.is_overheated and time.time() > tank.start + 2:
 			tank.is_overheated = False
 		if tank.is_portal_cd and time.time() > tank.portal_time + 5:
 			tank.is_portal_cd = False
 			tank.portal_time = time.time()
+
+
+		#player_largeText = pygame.font.Font(text_font, int(font_size*0.6))
+		#player_TextSurf, player_TextRect = text_objects("number of players: " + str(players), player_largeText)
+		#player_TextRect.center = ((screen_x/2), text_y)
+
+				
+		#score_rect = text_objects(str(tank.score), score_text)[1]
+		#score_surf_list.append(score_surf)
+		#screen.blit(score_surf, score_rect)  #, (tank.x_pos - 0.2*images.IM_SCALE, tank.y_pos - 0.2*images.IM_SCALE))
+		#score_surf = score_text.render(str(tank.score), True, (255,255,255,1))
+		#screen.blit(score_surf, (1,2))
 
 	if dead_start_list and time.time() > dead_start_list[0] + 1:
 		game_objects_list.remove(text_list.pop(0))
