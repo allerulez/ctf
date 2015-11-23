@@ -363,11 +363,12 @@ while running:
 		if event.type == QUIT or (event.type == KEYDOWN and event.key == K_ESCAPE):
 			running = False
 		if players:	
-                        if event.type == KEYDOWN and event.key == K_SPACE:
-                            paused = True
-                            while paused:
-                                if event.type == KEYDOWN and event.key == K_SPACE:
-                                    paused = False
+			if event.type == KEYDOWN and event.key == K_p:
+				paused = True
+				while paused:
+					for event in pygame.event.get():
+						if event.type == KEYDOWN and event.key == K_u:
+							paused = False
 			if event.type == KEYDOWN and event.key == K_UP:
 				gameobjects.Tank.accelerate(tanks_list[0])
 			elif event.type == KEYUP and event.key == K_UP:
