@@ -354,6 +354,7 @@ exp_start = 0
 start = 0
 skip_update = 0
 score_text = pygame.font.SysFont(text_font, 30)
+paused = False
 while running:
 	#-- Handle the events
 	for event in pygame.event.get():
@@ -362,6 +363,11 @@ while running:
 		if event.type == QUIT or (event.type == KEYDOWN and event.key == K_ESCAPE):
 			running = False
 		if players:	
+                        if event.type == KEYDOWN and event.key == K_SPACE:
+                            paused = True
+                            while paused:
+                                if event.type == KEYDOWN and event.key == K_SPACE:
+                                    paused = False
 			if event.type == KEYDOWN and event.key == K_UP:
 				gameobjects.Tank.accelerate(tanks_list[0])
 			elif event.type == KEYUP and event.key == K_UP:
