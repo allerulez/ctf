@@ -168,12 +168,13 @@ class Tank(GamePhysicsObject):
     self.score                = 0
     self.oh                   = GameVisibleObject(self.x_pos, self.y_pos, pygame.transform.scale(images.overheat,(images.TILE_SIZE, images.TILE_SIZE)))
     
+    
     # Define the start position, which is also the position where the tank has to return with the flag
     self.start_position       = pymunk.Vec2d(self.x_pos, self.y_pos)
     self.start_orientation    = orientation
 
-  def score_inc(self):
-    self.score += 1
+  def score_increment(self, score_inc=1):
+    self.score += score_inc
 
   def score_red(self):
     self.score -= 2
@@ -326,6 +327,11 @@ class Flag(GameVisibleObject):
   def __init__(self, x, y):
     self.is_on_tank   = False
     GameVisibleObject.__init__(self, x, y,  pygame.transform.scale(images.flag, (images.TILE_SIZE, images.TILE_SIZE)))
+    self.start_pos = (x,y)
+
+  def reset_flag(self):
+    self.x, self.y = self.start_pos
+    self.orientation = 0
 
 class HP(GameVisibleObject):
   def __init__(self, x, y):

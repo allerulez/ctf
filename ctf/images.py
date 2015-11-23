@@ -56,8 +56,11 @@ portal	  = load_image('portal.png')
 # Image of flag
 flag      = load_image('flag.png')
 
+# Image of health points (hearts)
 hp		  = load_image('hp.png')
 
+#Image of pause
+pause	  = load_image('pause.png')
 
 was_killed = [load_image('kills/player1_was_killed.png'), load_image('kills/player2_was_killed.png'), load_image('kills/player3_was_killed.png'),
 			 load_image('kills/player4_was_killed.png'), load_image('kills/player5_was_killed.png'), load_image('kills/player6_was_killed.png')]

@@ -50,7 +50,9 @@ score_surf_list		= []
 dead_start_list 	= []
 current_map 		= []
 portal_list 		= []
+text_count_list		= []
 players 			= 0
+win_score			= 5
 #   Define the current level
 pygame.display.set_caption('Capture the Flag')
 screen_x = 800
@@ -62,6 +64,9 @@ text_font = 'freesansbold.ttf'
 text_y = 115
 map_nr = 1
 screen = pygame.display.set_mode((screen_x,screen_y))
+score_font_size = 25
+player_score_text = pygame.font.Font(text_font, score_font_size)
+
 
 def text_objects(text, font, color = (255,255,255, 1)):
     textSurface = font.render(text, True, color)
@@ -226,6 +231,7 @@ for i in range(0, len(current_map.start_positions)):
 	# Add the tanks hp bar
 	tank.hp_vis += [gameobjects.HP(pos[0]-0.2, pos[1]+0.25)]
 	tank.hp_vis += [gameobjects.HP(pos[0]+0.2, pos[1]+0.25)]
+
 	# Add the tank to the list of objects to display
 	game_objects_list.append(tank)
 	game_objects_list.append(base)
@@ -235,6 +241,11 @@ for i in range(0, len(current_map.start_positions)):
 	tanks_list.append(tank)
 	# Add the tanks overheat image to list
 	game_objects_list.append(tanks_list[i].oh)
+	# Add score counter:
+	TextSurf_counter, TextRect_counter = text_objects(str(tanks_list[i].score), player_score_text)
+	counter_text = gameobjects.GameVisibleObject(tank.x_pos, tank.y_pos-0.5, TextSurf_counter)
+	text_count_list.append(counter_text)
+	game_objects_list.append(counter_text)	
 
 	#Add ai
 	if i > (players-1):
@@ -285,7 +296,7 @@ def tank_hit(space, arb):
 			tank_exp_list.append(tank_explosion(arb.shapes[1].parent, images.small_explosion))
 			game_objects_list.remove(arb.shapes[1].parent.hp_vis[0])
 		elif arb.shapes[1].parent.hp == 0:
-			arb.shapes[0].parent.tank.score_inc()
+			arb.shapes[0].parent.tank.score_increment()
 			arb.shapes[1].parent.score_red()
 			global current_map
 			for index in range(len(tanks_list)):
@@ -355,6 +366,7 @@ start = 0
 skip_update = 0
 score_text = pygame.font.SysFont(text_font, 30)
 paused = False
+counter_index = 0
 while running:
 	#-- Handle the events
 	for event in pygame.event.get():
@@ -365,10 +377,8 @@ while running:
 		if players:	
 			if event.type == KEYDOWN and event.key == K_p:
 				paused = True
-				while paused:
-					for event in pygame.event.get():
-						if event.type == KEYDOWN and event.key == K_u:
-							paused = False
+				game_paused = gameobjects.GameVisibleObject(current_map.width/2,current_map.height/2 , images.pause)
+				game_objects_list.append(game_paused)
 			if event.type == KEYDOWN and event.key == K_UP:
 				gameobjects.Tank.accelerate(tanks_list[0])
 			elif event.type == KEYUP and event.key == K_UP:
@@ -406,6 +416,16 @@ while running:
 			game_objects_list.append(tank.hp_vis[0])
 		if tank.hp == 1 and tank.hp_vis[0] in game_objects_list:
 			game_objects_list.remove(tank.hp_vis[0])
+		game_objects_list.remove(text_count_list[counter_index])
+		counter_x = tank.body.position[0] - 0.4
+		counter_y = tank.body.position[1] - 0.4
+		TextSurf_counter, TextRect_counter = text_objects(str(tank.score), player_score_text)
+		counter = gameobjects.GameVisibleObject(counter_x, counter_y, TextSurf_counter)
+		text_count_list[counter_index] = counter
+		game_objects_list.append(text_count_list[counter_index])
+		counter_index += 1
+	counter_index = 0
+
 			
 
 	if tank_exp_list and tank_exp_list[0]():
@@ -449,8 +469,13 @@ while running:
 
 	for i in range(len(tanks_list)):
 		gameobjects.Tank.try_grab_flag(tanks_list[i], flag)
-		if gameobjects.Tank.has_won(tanks_list[i]):
+		if tanks_list[i].score >= win_score:
 			running = False
+		elif gameobjects.Tank.has_won(tanks_list[i]):
+			tanks_list[i].score_increment(3)
+			tanks_list[i].flag = None
+			flag.is_on_tank = False
+			flag.reset_flag()
 		if i < len(tanks_list)-players:
 			ai.SimpleAi.decide(ais[i])
 
@@ -473,3 +498,9 @@ while running:
 
 	#   Control the game framerate
 	clock.tick(framerate)
+
+	while paused:
+		for event in pygame.event.get():
+			if event.type == KEYDOWN and event.key == K_u:
+				paused = False
+				game_objects_list.remove(game_paused)
