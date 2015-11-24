@@ -62,6 +62,12 @@ hp		  = load_image('hp.png')
 #Image of pause
 pause	  = load_image('pause.png')
 
+#Image of spawn protection
+spawn_protect = load_image('spawn_protect.png')
+
+#Image of overlay
+overlay	  = load_image('overlay.png')
+
 was_killed = [load_image('kills/player1_was_killed.png'), load_image('kills/player2_was_killed.png'), load_image('kills/player3_was_killed.png'),
 			 load_image('kills/player4_was_killed.png'), load_image('kills/player5_was_killed.png'), load_image('kills/player6_was_killed.png')]
 

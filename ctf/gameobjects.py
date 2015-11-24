@@ -167,7 +167,9 @@ class Tank(GamePhysicsObject):
     self.portal_time          = 0
     self.score                = 0
     self.oh                   = GameVisibleObject(self.x_pos, self.y_pos, pygame.transform.scale(images.overheat,(images.TILE_SIZE, images.TILE_SIZE)))
-    
+    self.death_timer          = 0
+    self.is_protected         = False
+    self.sp                   = GameVisibleObject(self.x_pos, self.y_pos, pygame.transform.scale(images.spawn_protect,(images.TILE_SIZE, images.TILE_SIZE)))
     
     # Define the start position, which is also the position where the tank has to return with the flag
     self.start_position       = pymunk.Vec2d(self.x_pos, self.y_pos)
@@ -180,6 +182,9 @@ class Tank(GamePhysicsObject):
     self.score -= 2
     if self.score < 0:
       self.score = 0
+    self.is_protected = True
+    self.death_timer = time.time()
+
 
   # Call this function to accelerate forward the tank
   def accelerate(self):
@@ -240,6 +245,12 @@ class Tank(GamePhysicsObject):
       self.oh.x           = 1337
       self.oh.y           = 1337 
 
+    if self.is_protected:
+      self.sp.x           = self.body.position[0]
+      self.sp.y           = self.body.position[1]
+    elif not self.is_protected:
+      self.sp.x           = 1337
+      self.sp.y           = 1337 
    
 
   """
@@ -283,6 +294,7 @@ class Tank(GamePhysicsObject):
       self.is_overheated = False
       self.maximum_speed = 1
       self.hp = 2
+      self.score_red()
       return (missile, self.start, self)
     self.is_overheated = True
     self.start = time.time()

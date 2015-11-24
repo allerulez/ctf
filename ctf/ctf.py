@@ -51,12 +51,15 @@ dead_start_list 	= []
 current_map 		= []
 portal_list 		= []
 text_count_list		= []
+tanks_color_list	= [(208,137,13,255), (13,91,208,255), (255,255,255,255), \
+					(215,227,23,255), (198,41,10,255), (123,123,123,255)]
+
 players 			= 0
 win_score			= 5
 #   Define the current level
 pygame.display.set_caption('Capture the Flag')
-screen_x = 800
-screen_y = 600
+screen_x = 400*images.IM_SCALE
+screen_y = 300*images.IM_SCALE
 #font_x 	= screen_x/2
 #font_y  = screen_y/2
 font_size = 115
@@ -241,6 +244,8 @@ for i in range(0, len(current_map.start_positions)):
 	tanks_list.append(tank)
 	# Add the tanks overheat image to list
 	game_objects_list.append(tanks_list[i].oh)
+	# Add the tanks spawn protection image to list
+	game_objects_list.append(tanks_list[i].sp)
 	# Add score counter:
 	TextSurf_counter, TextRect_counter = text_objects(str(tanks_list[i].score), player_score_text)
 	counter_text = gameobjects.GameVisibleObject(tank.x_pos, tank.y_pos-0.5, TextSurf_counter)
@@ -290,7 +295,7 @@ def missile_hit(space, arb):
 	return 1
 
 def tank_hit(space, arb):
-	if not arb.shapes[1].parent == arb.shapes[0].parent.tank:
+	if not arb.shapes[1].parent == arb.shapes[0].parent.tank and not arb.shapes[1].parent.is_protected:
 		arb.shapes[1].parent.hp -= 1
 		if arb.shapes[1].parent.hp == 1:
 			tank_exp_list.append(tank_explosion(arb.shapes[1].parent, images.small_explosion))
@@ -314,9 +319,9 @@ def tank_hit(space, arb):
 			arb.shapes[1].parent.body.position = arb.shapes[1].parent.start_position
 			arb.shapes[1].parent.body.angle = arb.shapes[1].parent.start_orientation
 			arb.shapes[1].parent.hp = 2
-		if arb.shapes[0].parent in game_objects_list:
-			space.add_post_step_callback(space.remove, arb.shapes[0], arb.shapes[0].body)
-			game_objects_list.remove(arb.shapes[0].parent)
+	if not arb.shapes[1].parent == arb.shapes[0].parent.tank and arb.shapes[0].parent in game_objects_list:
+		space.add_post_step_callback(space.remove, arb.shapes[0], arb.shapes[0].body)
+		game_objects_list.remove(arb.shapes[0].parent)
 	return 1 
 
 def box_hit(space, arb):
@@ -367,6 +372,8 @@ skip_update = 0
 score_text = pygame.font.SysFont(text_font, 30)
 paused = False
 counter_index = 0
+screen_x = current_map.width*images.TILE_SIZE
+
 while running:
 	#-- Handle the events
 	for event in pygame.event.get():
@@ -437,6 +444,8 @@ while running:
 		if tank.is_portal_cd and time.time() > tank.portal_time + 5:
 			tank.is_portal_cd = False
 			tank.portal_time = time.time()
+		if tank.death_timer+4 < time.time():
+			tank.is_protected = False
 
 
 		#player_largeText = pygame.font.Font(text_font, int(font_size*0.6))
@@ -504,3 +513,33 @@ while running:
 			if event.type == KEYDOWN and event.key == K_u:
 				paused = False
 				game_objects_list.remove(game_paused)
+
+
+Win_Screen = True
+text_y = 100
+font_size = 50
+
+rectangle = pygame.draw.rect(screen, (0,0,0), ((0,0), (2000,2000)), 1)
+screen.blit(images.overlay, rectangle)
+player_largeText = pygame.font.Font(text_font, font_size)
+
+for tank in tanks_list:
+	
+	player_TextSurf, player_TextRect = text_objects("Player " + str(tanks_list.index(tank)+1) + " score: " + \
+		str(tank.score), player_largeText, tanks_color_list[tanks_list.index(tank)])
+	player_TextRect.center = ((screen_x/2), text_y)
+	player_text_surf_list.append(player_TextSurf)
+	player_text_rect_list.append(player_TextRect)
+	text_y += 60
+	screen.blit(player_TextSurf, player_TextRect)
+
+text_y += 100
+player_TextSurf, player_TextRect = text_objects("Press ESC to quit", player_largeText)
+player_TextRect.center = ((screen_x/2), text_y)
+screen.blit(player_TextSurf, player_TextRect)
+
+while Win_Screen:
+	for event in pygame.event.get():
+			if event.type == QUIT or (event.type == KEYDOWN and event.key == K_ESCAPE):
+				Win_Screen = False
+	pygame.display.update()
