@@ -55,7 +55,7 @@ tanks_color_list	= [(208,137,13,255), (13,91,208,255), (255,255,255,255), \
 					(215,227,23,255), (198,41,10,255), (123,123,123,255)]
 
 players 			= 0
-win_score			= 5
+win_score			= 10
 #   Define the current level
 pygame.display.set_caption('Capture the Flag')
 screen_x = 400*images.IM_SCALE
@@ -441,7 +441,7 @@ while running:
 	for tank in tanks_list:
 		if tank.is_overheated and time.time() > tank.start + 2:
 			tank.is_overheated = False
-		if tank.is_portal_cd and time.time() > tank.portal_time + 5:
+		if tank.is_portal_cd and time.time() > tank.portal_time + 3:
 			tank.is_portal_cd = False
 			tank.portal_time = time.time()
 		if tank.death_timer+4 < time.time():
