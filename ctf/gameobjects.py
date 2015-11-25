@@ -170,6 +170,8 @@ class Tank(GamePhysicsObject):
     self.death_timer          = 0
     self.is_protected         = False
     self.sp                   = GameVisibleObject(self.x_pos, self.y_pos, pygame.transform.scale(images.spawn_protect,(images.TILE_SIZE, images.TILE_SIZE)))
+    self.kills                = 0
+    self.deaths               = 0
     
     # Define the start position, which is also the position where the tank has to return with the flag
     self.start_position       = pymunk.Vec2d(self.x_pos, self.y_pos)
@@ -185,6 +187,15 @@ class Tank(GamePhysicsObject):
     self.is_protected = True
     self.death_timer = time.time()
 
+  def kills_increment(self, tank):
+    self.kills += 1
+    self.score_increment()
+    tank.deaths_increment()
+
+
+  def deaths_increment(self):
+    self.deaths += 1
+    self.score_red()
 
   # Call this function to accelerate forward the tank
   def accelerate(self):
@@ -294,7 +305,7 @@ class Tank(GamePhysicsObject):
       self.is_overheated = False
       self.maximum_speed = 1
       self.hp = 2
-      self.score_red()
+      self.deaths_increment()
       return (missile, self.start, self)
     self.is_overheated = True
     self.start = time.time()
@@ -331,6 +342,11 @@ class GameVisibleObject(GameObject):
     return physics_to_display(pymunk.Vec2d(self.x, self.y))
   def screen_orientation(self):
     return self.orientation
+
+class Tab(GameVisibleObject):
+  def __init__(self, x, y):
+    GameVisibleObject.__init__(self, x, y,  pygame.transform.scale(images.tab, (images.tab.get_width() * images.IM_SCALE, images.tab.get_height() * images.IM_SCALE)))
+
 
 #
 # This class extends GameVisibleObject for representing flags.

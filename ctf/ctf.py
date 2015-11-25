@@ -316,8 +316,10 @@ def tank_hit(space, arb):
 			tank_exp_list.append(tank_explosion(arb.shapes[1].parent, images.small_explosion))
 			game_objects_list.remove(arb.shapes[1].parent.hp_vis[0])
 		elif arb.shapes[1].parent.hp == 0:
-			arb.shapes[0].parent.tank.score_increment()
-			arb.shapes[1].parent.score_red()
+			
+
+			arb.shapes[0].parent.tank.kills_increment(arb.shapes[1].parent)
+			#arb.shapes[1].parent.score_red()
 			global current_map
 			for index in range(len(tanks_list)):
 				if 	tanks_list[index].hp == 0:
@@ -386,11 +388,13 @@ exp_start = 0
 start = 0
 skip_update = 0
 score_text = pygame.font.SysFont(text_font, 30)
+tab_text = pygame.font.SysFont("Arial", 40)
 paused = False
 counter_index = 0
 screen_x = current_map.width*images.TILE_SIZE
-tab_overlay = pygame.draw.rect(screen, (0,0,0), ((0,0), (400*images.IM_SCALE,300*images.IM_SCALE)), 1)
-
+tab_overlay = pygame.draw.rect(screen, (0,0,0), ((0,0), (screen_x,screen_y)), 1)
+tab_x = 100*images.IM_SCALE
+tab_y  = 100 * images.IM_SCALE
 while running:
 	#-- Handle the events
 	for event in pygame.event.get():
@@ -404,8 +408,23 @@ while running:
 				game_paused = gameobjects.GameVisibleObject(current_map.width/2,current_map.height/2 , images.pause)
 				game_objects_list.append(game_paused)
 			if event.type == KEYDOWN and event.key == K_TAB:
-				tab = gameobjects.GameVisibleObject(current_map.width/2,current_map.height/2 , pygame.transform.scale(images.tab, (400*images.IM_SCALE, 300*images.IM_SCALE)))
+				tab = gameobjects.Tab(current_map.width / 2, current_map.height / 2)
 				game_objects_list.append(tab)
+				"""
+				tab = gameobjects.GameVisibleObject(current_map.width/2,current_map.height/2 , \
+					pygame.transform.scale(images.tab, (400*images.IM_SCALE, 300*images.IM_SCALE)))
+				game_objects_list.append(tab)
+				tab_index = 0
+				for tank in tanks_list:
+
+					textsurf_tab, textrect_tab = text_objects(str(tank.kills), tab_text)
+					tab_vis = gameobjects.GameVisibleObject(current_map.width * 0.6, (current_map.height*0.2835)+0.44*tab_index, textsurf_tab)
+					game_objects_list.append(tab_vis)
+					tab_y += 100
+					tab_index += 1
+				"""
+
+
 			elif event.type == KEYUP and event.key == K_TAB:
 				game_objects_list.remove(tab)
 			if event.type == KEYDOWN and event.key == K_UP:
@@ -454,6 +473,7 @@ while running:
 		game_objects_list.append(text_count_list[counter_index])
 		counter_index += 1
 	counter_index = 0
+
 
 			
 
