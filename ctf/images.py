@@ -68,6 +68,9 @@ spawn_protect = load_image('spawn_protect.png')
 #Image of overlay
 overlay	  = load_image('overlay.png')
 
+# Image of Tab
+tab = load_image('overlay/overlay.png')
+
 was_killed = [load_image('kills/player1_was_killed.png'), load_image('kills/player2_was_killed.png'), load_image('kills/player3_was_killed.png'),
 			 load_image('kills/player4_was_killed.png'), load_image('kills/player5_was_killed.png'), load_image('kills/player6_was_killed.png')]
 

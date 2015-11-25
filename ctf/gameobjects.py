@@ -362,11 +362,11 @@ class Missile(GamePhysicsObject):
     # Define variable used to apply motion to the missile
     self.tank                 = tank
     self.orientation          = orientation
-    self.acceleration         = 10.0
-    self.velocity             = 5.0
+    self.acceleration         = 15.0
+    self.velocity             = 10.0
     self.angular_acceleration = 0.0
     self.angular_velocity     = 0.0
-    self.maximum_speed        = 10.0
+    self.maximum_speed        = 25.0
     self.shape.collision_type = 0
     self.sprite               = pygame.transform.scale(sprite, (images.TILE_SIZE//2, images.TILE_SIZE//2))
     # Define the start position, which is the position of the shooting tank

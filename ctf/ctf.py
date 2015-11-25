@@ -6,7 +6,7 @@ import argparse
 import random
 from pygame.locals import *
 from pygame.color import *
-import pymunk as pm
+import pymunk
 
 #----- Initialisation -----#
 
@@ -18,7 +18,7 @@ pygame.display.set_mode((600,800), RESIZABLE)
 clock = pygame.time.Clock()
 
 #-- Initialise the physics engine
-space = pm.Space()
+space = pymunk.Space()
 space.gravity = (0.0,  0.0)
 
 #-- Import from the ctf framework
@@ -88,6 +88,12 @@ for i in range(2):
 players = 1
 text_y = 115
 choose_players = True
+
+
+for player_TextRect in player_text_rect_list:
+	index = player_text_rect_list.index(player_TextRect)
+	mouse = pygame.mouse.get_pos()
+	screen.blit(player_text_surf_list[index], player_text_rect_list[index])
 while choose_players == True:
 	for event in pygame.event.get():
 		if event.type == pygame.QUIT or (event.type == KEYDOWN and event.key == K_ESCAPE):
@@ -97,8 +103,7 @@ while choose_players == True:
 		for player_TextRect in player_text_rect_list:
 			index = player_text_rect_list.index(player_TextRect)
 			mouse = pygame.mouse.get_pos()
-			if player_TextRect.collidepoint(mouse):
-				screen.blit(player_text_surf_list[index], player_text_rect_list[index])
+			if player_TextRect.collidepoint(mouse):	
 				if event.type == pygame.MOUSEBUTTONDOWN:
 					choose_players = False
 			if event.type == KEYDOWN and event.key == (index+48):
@@ -120,7 +125,10 @@ for i in maps.maps_list:
 	screen.blit(TextSurf, TextRect)
 map_nr = 1
 
-
+for TextRect in text_rect_list:
+	index = text_rect_list.index(TextRect)
+	mouse = pygame.mouse.get_pos()
+	screen.blit(text_surf_list[index], text_rect_list[index])
 start_menu = True
 while start_menu == True:
 	for event in pygame.event.get():
@@ -132,10 +140,6 @@ while start_menu == True:
 			index = text_rect_list.index(TextRect)
 			mouse = pygame.mouse.get_pos()
 			if TextRect.collidepoint(mouse):
-				#make_stuff(screen_x, text_y, map_nr, (130,130,0,1))
-				#text_surf_list[index] = largeText.render(("Play map: " + str(map_nr)), True, (150,150,150,1))
-				#text_surf_list[index].fill((230,230,20), text_rect_list[index])
-				screen.blit(text_surf_list[index], text_rect_list[index])
 				if event.type == pygame.MOUSEBUTTONDOWN:
 					 #screen_x > mouse[0] > 0 and (screen_y + font_size)/2 > mouse[1] > (screen_y - font_size)/2:
 					start_menu = False
@@ -156,12 +160,12 @@ while start_menu == True:
 screen = pygame.display.set_mode(current_map.rect().size)
 
 # --- Fence around the map START ---
-nw_box = pm.Body()
-se_box = pm.Body()
-north_seg = pm.Segment(nw_box,  (-0.5, -0.5), (current_map.width + 0.5, -0.5), 0.5)
-east_seg = pm.Segment(se_box, (current_map.width + 0.5, current_map.height + 0.5),(current_map.width + 0.5, -0.5), 0.5)
-south_seg = pm.Segment(se_box,  (current_map.width + 0.5, current_map.height + 0.5),(-0.5 , current_map.height + 0.5), 0.5)
-west_seg = pm.Segment(nw_box,   (-0.5, -0.5), (-0.5, current_map.height + 0.5), 0.5)
+nw_box = pymunk.Body()
+se_box = pymunk.Body()
+north_seg = pymunk.Segment(nw_box,  (-0.5, -0.5), (current_map.width + 0.5, -0.5), 0.5)
+east_seg = pymunk.Segment(se_box, (current_map.width + 0.5, current_map.height + 0.5),(current_map.width + 0.5, -0.5), 0.5)
+south_seg = pymunk.Segment(se_box,  (current_map.width + 0.5, current_map.height + 0.5),(-0.5 , current_map.height + 0.5), 0.5)
+west_seg = pymunk.Segment(nw_box,   (-0.5, -0.5), (-0.5, current_map.height + 0.5), 0.5)
 north_seg.collision_type = 10
 east_seg.collision_type = 10
 south_seg.collision_type = 10
@@ -215,7 +219,7 @@ for x in range(0, current_map.width):
 			elif box_type == 5:
 				box.shape.collision_type = 4
 				points  = [[-0, -0], [-0, 0],[0, 0],[0, -0]]
-				box.shape = pm.Poly(box.body, points)
+				box.shape = pymunk.Poly(box.body, points)
 				portal_list.append(box)
 			game_objects_list.append(box)
 			box_dict[(x+0.5, y+0.5)] = box
@@ -264,7 +268,18 @@ game_objects_def_pos_list = list(game_objects_list)
 
 def default_pos(tile):
 	return tile in game_objects_def_pos_list
+"""
+def overlay(state):
+	global screen
 
+	state:
+		#for tank in tanks_list:
+		tab_overlay = pygame.draw.rect(screen, (0,0,0), ((0,0), (400,300)), 1)
+		screen.blit(images.tab, tab_overlay)
+		pygame.display.update()
+	else:
+		pass
+"""
 
 # Collision handlers and functions ----START----
 
@@ -319,6 +334,7 @@ def tank_hit(space, arb):
 			arb.shapes[1].parent.body.position = arb.shapes[1].parent.start_position
 			arb.shapes[1].parent.body.angle = arb.shapes[1].parent.start_orientation
 			arb.shapes[1].parent.hp = 2
+			arb.shapes[1].parent.maximum_speed = 1.0
 	if not arb.shapes[1].parent == arb.shapes[0].parent.tank and arb.shapes[0].parent in game_objects_list:
 		space.add_post_step_callback(space.remove, arb.shapes[0], arb.shapes[0].body)
 		game_objects_list.remove(arb.shapes[0].parent)
@@ -338,7 +354,7 @@ def box_hit(space, arb):
 def tank_portal(space, arb):
 	if not arb.shapes[0].parent.is_portal_cd:
 		pos = random.choice(portal_list)
-		arb.shapes[0].parent.body.position = pm.Vec2d(pos.x_pos, pos.y_pos)
+		arb.shapes[0].parent.body.position = pymunk.Vec2d(pos.x_pos, pos.y_pos)
 		arb.shapes[0].parent.is_portal_cd = True
 
 		#tank.portal_time = 0
@@ -373,6 +389,7 @@ score_text = pygame.font.SysFont(text_font, 30)
 paused = False
 counter_index = 0
 screen_x = current_map.width*images.TILE_SIZE
+tab_overlay = pygame.draw.rect(screen, (0,0,0), ((0,0), (400*images.IM_SCALE,300*images.IM_SCALE)), 1)
 
 while running:
 	#-- Handle the events
@@ -386,6 +403,11 @@ while running:
 				paused = True
 				game_paused = gameobjects.GameVisibleObject(current_map.width/2,current_map.height/2 , images.pause)
 				game_objects_list.append(game_paused)
+			if event.type == KEYDOWN and event.key == K_TAB:
+				tab = gameobjects.GameVisibleObject(current_map.width/2,current_map.height/2 , pygame.transform.scale(images.tab, (400*images.IM_SCALE, 300*images.IM_SCALE)))
+				game_objects_list.append(tab)
+			elif event.type == KEYUP and event.key == K_TAB:
+				game_objects_list.remove(tab)
 			if event.type == KEYDOWN and event.key == K_UP:
 				gameobjects.Tank.accelerate(tanks_list[0])
 			elif event.type == KEYUP and event.key == K_UP:
@@ -485,6 +507,7 @@ while running:
 			tanks_list[i].flag = None
 			flag.is_on_tank = False
 			flag.reset_flag()
+			tanks_list[i].maximum_speed = 1
 		if i < len(tanks_list)-players:
 			ai.SimpleAi.decide(ais[i])
 
