@@ -75,7 +75,7 @@ def text_objects(text, font, color = (255,255,255, 1)):
     textSurface = font.render(text, True, color)
     return textSurface, textSurface.get_rect()
 
-for i in range(2):
+for i in range(3):
 	player_largeText = pygame.font.Font(text_font, int(font_size*0.6))
 	player_TextSurf, player_TextRect = text_objects("number of players: " + str(players), player_largeText)
 	player_TextRect.center = ((screen_x/2), text_y)
@@ -94,6 +94,7 @@ for player_TextRect in player_text_rect_list:
 	index = player_text_rect_list.index(player_TextRect)
 	mouse = pygame.mouse.get_pos()
 	screen.blit(player_text_surf_list[index], player_text_rect_list[index])
+hoover_list = [False, False, False, False]
 while choose_players == True:
 	for event in pygame.event.get():
 		if event.type == pygame.QUIT or (event.type == KEYDOWN and event.key == K_ESCAPE):
@@ -103,9 +104,21 @@ while choose_players == True:
 		for player_TextRect in player_text_rect_list:
 			index = player_text_rect_list.index(player_TextRect)
 			mouse = pygame.mouse.get_pos()
-			if player_TextRect.collidepoint(mouse):	
+			if player_TextRect.collidepoint(mouse):
+				if not hoover_list[index]:
+					hoover_list[index] = True
+					player_TextSurf = text_objects("number of players: " + str(index), player_largeText, (150,150,150,1))[0]
+					screen.blit(player_TextSurf, player_TextRect)
+					pygame.display.update()
+
 				if event.type == pygame.MOUSEBUTTONDOWN:
 					choose_players = False
+			
+			elif not player_TextRect.collidepoint(mouse) and hoover_list[index]:
+				hoover_list[index] = False
+				player_TextSurf = text_objects("number of players: " + str(index), player_largeText)[0]
+				screen.blit(player_TextSurf, player_TextRect)
+				pygame.display.update()			
 			if event.type == KEYDOWN and event.key == (index+48):
 				players = int(index)
 				choose_players = False
@@ -140,13 +153,29 @@ while start_menu == True:
 			index = text_rect_list.index(TextRect)
 			mouse = pygame.mouse.get_pos()
 			if TextRect.collidepoint(mouse):
+				if not hoover_list[index]:
+					hoover_list[index] = True
+					TextSurf = text_objects("Play map: " + str(index+1), largeText, (150,150,150,1))[0]
+					screen.blit(TextSurf, TextRect)
+					pygame.display.update()
+
+
 				if event.type == pygame.MOUSEBUTTONDOWN:
 					 #screen_x > mouse[0] > 0 and (screen_y + font_size)/2 > mouse[1] > (screen_y - font_size)/2:
 					start_menu = False
 					current_map = maps.maps_list[index]
+
+			elif not TextRect.collidepoint(mouse) and hoover_list[index]:
+				hoover_list[index] = False
+				TextSurf = text_objects("Play map: " + str(index+1), largeText)[0]
+				screen.blit(TextSurf, TextRect)
+				pygame.display.update()
+
+
 			if event.type == KEYDOWN and event.key == (index+49):
 				start_menu = False
 				current_map = maps.maps_list[index]
+
 			#make_stuff(screen_x, text_y, map_nr)
 		#	else: 
 			#	text_surf_list[index].
@@ -402,15 +431,16 @@ while running:
 		# close button of the window) or if the user press the escape key.
 		if event.type == QUIT or (event.type == KEYDOWN and event.key == K_ESCAPE):
 			running = False
-		if players:	
+		if players > 0:	
 			if event.type == KEYDOWN and event.key == K_p:
 				paused = True
 				game_paused = gameobjects.GameVisibleObject(current_map.width/2,current_map.height/2 , images.pause)
 				game_objects_list.append(game_paused)
+			"""
 			if event.type == KEYDOWN and event.key == K_TAB:
 				tab = gameobjects.Tab(current_map.width / 2, current_map.height / 2)
 				game_objects_list.append(tab)
-				"""
+				
 				tab = gameobjects.GameVisibleObject(current_map.width/2,current_map.height/2 , \
 					pygame.transform.scale(images.tab, (400*images.IM_SCALE, 300*images.IM_SCALE)))
 				game_objects_list.append(tab)
@@ -422,11 +452,10 @@ while running:
 					game_objects_list.append(tab_vis)
 					tab_y += 100
 					tab_index += 1
-				"""
-
-
+				
 			elif event.type == KEYUP and event.key == K_TAB:
 				game_objects_list.remove(tab)
+			"""
 			if event.type == KEYDOWN and event.key == K_UP:
 				gameobjects.Tank.accelerate(tanks_list[0])
 			elif event.type == KEYUP and event.key == K_UP:
@@ -446,11 +475,35 @@ while running:
 			if event.type == KEYDOWN and event.key == K_RETURN:
 				#if not tanks_list[0].start or time.time() > tanks_list[0].start + 2:
 				if tanks_list[0].is_overheated:
-					player_dead = gameobjects.GameVisibleObject(current_map.width/2,current_map.height/2 , images.player1_dead)
+					player_dead = gameobjects.GameVisibleObject(current_map.width/2,current_map.height/2 , images.died_to_oh[0])
 					dead_start_list.append(time.time())
 					game_objects_list.append(player_dead)
 					text_list.append(player_dead)
 				game_objects_list.append(gameobjects.Tank.shoot(tanks_list[0], space)[0])
+		if players > 1:
+			if event.type == KEYDOWN and event.key == K_w:
+				gameobjects.Tank.accelerate(tanks_list[1])
+			elif event.type == KEYUP and event.key == K_w:
+				gameobjects.Tank.stop_moving(tanks_list[1])
+			if event.type == KEYDOWN and event.key == K_s:
+				gameobjects.Tank.decelerate(tanks_list[1])
+			elif event.type == KEYUP and event.key == K_s:
+				gameobjects.Tank.stop_moving(tanks_list[1])
+			if event.type == KEYDOWN and event.key == K_a:
+				gameobjects.Tank.turn_left(tanks_list[1])
+			elif event.type == KEYUP and event.key == K_a:
+				gameobjects.Tank.stop_turning(tanks_list[1])
+			if event.type == KEYDOWN and event.key == K_d:
+				gameobjects.Tank.turn_right(tanks_list[1])
+			elif event.type == KEYUP and event.key == K_d:
+				gameobjects.Tank.stop_turning(tanks_list[1])
+			if event.type == KEYDOWN and event.key == K_SPACE:
+				if tanks_list[1].is_overheated:
+					player_dead = gameobjects.GameVisibleObject(current_map.width/2,current_map.height/2 , images.died_to_oh[1])
+					dead_start_list.append(time.time())
+					game_objects_list.append(player_dead)
+					text_list.append(player_dead)
+				game_objects_list.append(gameobjects.Tank.shoot(tanks_list[1], space)[0])
 
 	#		if event.type == KEYDOWN and event.key == K_SPACE:
 	#			screen2 = screen

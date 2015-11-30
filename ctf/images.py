@@ -35,8 +35,6 @@ small_explosion = load_image('small_explosion.png')
 # Image of overheat
 overheat = load_image('overheat.png')
 
-# Image of deathtext 1
-player1_dead = load_image('kills/player1_died_to_oh.png')
 
 # Image of a grass tile
 grass     = load_image('grass.png')
@@ -74,7 +72,7 @@ tab = load_image('overlay/overlay.png')
 was_killed = [load_image('kills/player1_was_killed.png'), load_image('kills/player2_was_killed.png'), load_image('kills/player3_was_killed.png'),
 			 load_image('kills/player4_was_killed.png'), load_image('kills/player5_was_killed.png'), load_image('kills/player6_was_killed.png')]
 
-
+died_to_oh = [load_image('kills/player1_died_to_oh.png'), load_image('kills/player2_died_to_oh.png')]
 # List of image of tanks of different colors
 tanks     = [load_image('tank_orange.png'), load_image('tank_blue.png'), load_image('tank_white.png'),
              load_image('tank_yellow.png'), load_image('tank_red.png'),  load_image('tank_gray.png')]
