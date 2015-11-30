@@ -51,6 +51,7 @@ dead_start_list 	= []
 current_map 		= []
 portal_list 		= []
 text_count_list		= []
+hoover_list 		= [False, False, False, False]
 tanks_color_list	= [(208,137,13,255), (13,91,208,255), (255,255,255,255), \
 					(215,227,23,255), (198,41,10,255), (123,123,123,255)]
 
@@ -94,7 +95,6 @@ for player_TextRect in player_text_rect_list:
 	index = player_text_rect_list.index(player_TextRect)
 	mouse = pygame.mouse.get_pos()
 	screen.blit(player_text_surf_list[index], player_text_rect_list[index])
-hoover_list = [False, False, False, False]
 while choose_players == True:
 	for event in pygame.event.get():
 		if event.type == pygame.QUIT or (event.type == KEYDOWN and event.key == K_ESCAPE):
@@ -110,10 +110,9 @@ while choose_players == True:
 					player_TextSurf = text_objects("number of players: " + str(index), player_largeText, (150,150,150,1))[0]
 					screen.blit(player_TextSurf, player_TextRect)
 					pygame.display.update()
-
 				if event.type == pygame.MOUSEBUTTONDOWN:
+					players = int(index)
 					choose_players = False
-			
 			elif not player_TextRect.collidepoint(mouse) and hoover_list[index]:
 				hoover_list[index] = False
 				player_TextSurf = text_objects("number of players: " + str(index), player_largeText)[0]
@@ -417,13 +416,13 @@ exp_start = 0
 start = 0
 skip_update = 0
 score_text = pygame.font.SysFont(text_font, 30)
-tab_text = pygame.font.SysFont("Arial", 40)
+#tab_text = pygame.font.SysFont("Arial", 40)
 paused = False
 counter_index = 0
 screen_x = current_map.width*images.TILE_SIZE
-tab_overlay = pygame.draw.rect(screen, (0,0,0), ((0,0), (screen_x,screen_y)), 1)
-tab_x = 100*images.IM_SCALE
-tab_y  = 100 * images.IM_SCALE
+#tab_overlay = pygame.draw.rect(screen, (0,0,0), ((0,0), (screen_x,screen_y)), 1)
+#tab_x = 100*images.IM_SCALE
+#tab_y  = 100 * images.IM_SCALE
 while running:
 	#-- Handle the events
 	for event in pygame.event.get():
