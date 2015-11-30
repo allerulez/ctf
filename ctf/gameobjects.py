@@ -360,7 +360,12 @@ class Flag(GameVisibleObject):
   def reset_flag(self):
     self.x, self.y = self.start_pos
     self.orientation = 0
-
+"""
+class Speed_powerup(GameVisibleObject):
+  def __init__(self, x, y):
+    self.is_on_tank   = False
+    GameVisibleObject.__init__(self, x, y, pygame.transform.scale(images.speed_powerup, (images.TILE_SIZE, images.TILE_SIZE)))
+"""
 class HP(GameVisibleObject):
   def __init__(self, x, y):
     GameVisibleObject.__init__(self, x, y,  pygame.transform.scale(images.hp, (10*images.IM_SCALE,10*images.IM_SCALE)))
