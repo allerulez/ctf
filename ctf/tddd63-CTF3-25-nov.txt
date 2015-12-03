@@ -7,3 +7,4 @@ Implemented functions:
 --Spawn protection, when you die you gain a protective shield around you for 4 seconds.
 --Score counter, it is visible at the left corner of the tank on the screen, 3 points for flag capture and 1 for a kill,
 you also loose 2 points if you die from any source.
+

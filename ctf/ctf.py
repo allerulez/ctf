@@ -24,7 +24,6 @@ space.gravity = (0.0,  0.0)
 #-- Import from the ctf framework
 import ai
 import boxmodels
-import images
 import gameobjects
 import maps
 
@@ -46,6 +45,8 @@ text_surf_list 		= []
 text_rect_list 		= []
 player_text_surf_list=[]
 player_text_rect_list=[]
+art_surf_list 		= []
+art_rect_list 		= []
 score_surf_list		= []
 dead_start_list 	= []
 current_map 		= []
@@ -54,16 +55,18 @@ text_count_list		= []
 hoover_list 		= [False, False, False, False]
 tanks_color_list	= [(208,137,13,255), (13,91,208,255), (255,255,255,255), \
 					(215,227,23,255), (198,41,10,255), (123,123,123,255)]
-
+art_packs_list 		= ["standard", "potato"]
+art_pack 			= "standard"
 players 			= 0
 win_score			= 10
 #   Define the current level
 pygame.display.set_caption('Capture the Flag')
-screen_x = 400*images.IM_SCALE
-screen_y = 300*images.IM_SCALE
+screen_x = 800
+screen_y = 600
 #font_x 	= screen_x/2
 #font_y  = screen_y/2
 font_size = 115
+art_font_size = 70
 text_font = 'freesansbold.ttf'
 text_y = 115
 map_nr = 1
@@ -72,9 +75,22 @@ score_font_size = 25
 player_score_text = pygame.font.Font(text_font, score_font_size)
 
 
+
+def set_art_pack(pack):
+	pack_file = open("data/pack_file.txt", "w")
+	pack_file.write(str(pack))
+	pack_file.close()
+	"""
+	if art_pack == str(pack):
+		pass
+	else:
+		art_pack = str(pack)
+	"""
+
 def text_objects(text, font, color = (255,255,255, 1)):
     textSurface = font.render(text, True, color)
     return textSurface, textSurface.get_rect()
+
 
 for i in range(3):
 	player_largeText = pygame.font.Font(text_font, int(font_size*0.6))
@@ -95,7 +111,12 @@ for player_TextRect in player_text_rect_list:
 	index = player_text_rect_list.index(player_TextRect)
 	mouse = pygame.mouse.get_pos()
 	screen.blit(player_text_surf_list[index], player_text_rect_list[index])
+	pygame.mixer.init()
+	pygame.mixer.music.load("data/test2.wav")
+	pygame.mixer.music.play()
 while choose_players == True:
+	
+
 	for event in pygame.event.get():
 		if event.type == pygame.QUIT or (event.type == KEYDOWN and event.key == K_ESCAPE):
 			choose_players = False
@@ -124,6 +145,7 @@ while choose_players == True:
 	pygame.display.update()
 
 screen.fill((0,0,0,1))
+hoover_list 		= [False, False, False, False]
 
 map_nr = 1
 for i in maps.maps_list:
@@ -142,7 +164,10 @@ for TextRect in text_rect_list:
 	mouse = pygame.mouse.get_pos()
 	screen.blit(text_surf_list[index], text_rect_list[index])
 start_menu = True
+
 while start_menu == True:
+	
+
 	for event in pygame.event.get():
 		if event.type == pygame.QUIT or (event.type == KEYDOWN and event.key == K_ESCAPE):
 			start_menu = False
@@ -183,9 +208,66 @@ while start_menu == True:
 
 
 
+screen.fill((0,0,0,1))
+hoover_list 		= [False, False, False, False]
+
+text_y = 115
+
+for i in range(len(art_packs_list)):
+	largeText = pygame.font.Font(text_font, art_font_size)
+	TextSurf, TextRect = text_objects("Art pack: " + str(art_packs_list[i]), largeText)
+	TextRect.center = ((screen_x/2), text_y)
+	art_surf_list.append(TextSurf)
+	art_rect_list.append(TextRect)
+	text_y += 115
+	screen.blit(TextSurf, TextRect)
+
+for TextRect in art_rect_list:
+	index = art_rect_list.index(TextRect)
+	mouse = pygame.mouse.get_pos()
+	screen.blit(art_surf_list[index], art_rect_list[index])
+
+art_menu = True
+
+while art_menu == True:
+	
+	for event in pygame.event.get():
+		if event.type == pygame.QUIT or (event.type == KEYDOWN and event.key == K_ESCAPE):
+			art_menu = False
+			pygame.quit()
+			quit()
+		for TextRect in art_rect_list:
+			index = art_rect_list.index(TextRect)
+			mouse = pygame.mouse.get_pos()
+			if TextRect.collidepoint(mouse):
+				if not hoover_list[index]:
+					hoover_list[index] = True
+					TextSurf = text_objects("Art pack: " + str(art_packs_list[index]), largeText, (150,150,150,1))[0]
+					screen.blit(TextSurf, TextRect)
+					pygame.display.update()
+
+
+				if event.type == pygame.MOUSEBUTTONDOWN:
+					 #screen_x > mouse[0] > 0 and (screen_y + font_size)/2 > mouse[1] > (screen_y - font_size)/2:
+					art_menu = False
+					set_art_pack(art_packs_list[index])
+
+			elif not TextRect.collidepoint(mouse) and hoover_list[index]:
+				hoover_list[index] = False
+				TextSurf = text_objects("Art pack: " + str(art_packs_list[index]), largeText)[0]
+				screen.blit(TextSurf, TextRect)
+				pygame.display.update()
+	pygame.display.update()
+screen.fill((0,0,0,1))
+
+pygame.mixer.music.stop()
+pygame.mixer.music.load("data/glass.wav")
+pygame.mixer.music.play()
+
 
 #-- Resize the screen to the size of the current level
 screen = pygame.display.set_mode(current_map.rect().size)
+import images
 
 # --- Fence around the map START ---
 nw_box = pymunk.Body()
@@ -207,7 +289,6 @@ background = pygame.Surface(screen.get_size())
 #   The first loop will iterate "x" between "0" and "width-1" and the second loop will iterate
 #   "y" between "0" and "height-1"
 #""
-
 for x in range(0, current_map.width):
 	for y in range(0, current_map.height):
 		# The call to the function "blit" will copy the image contained in "images.grass"
@@ -424,6 +505,10 @@ screen_x = current_map.width*images.TILE_SIZE
 #tab_x = 100*images.IM_SCALE
 #tab_y  = 100 * images.IM_SCALE
 while running:
+	if not pygame.mixer.music.get_busy():
+		pygame.mixer.music.load("data/gun.wav")
+		pygame.mixer.music.play()
+
 	#-- Handle the events
 	for event in pygame.event.get():
 		# Check if we receive a QUIT event (for instance, if the user press the
@@ -455,6 +540,7 @@ while running:
 			elif event.type == KEYUP and event.key == K_TAB:
 				game_objects_list.remove(tab)
 			"""
+
 			if event.type == KEYDOWN and event.key == K_UP:
 				gameobjects.Tank.accelerate(tanks_list[0])
 			elif event.type == KEYUP and event.key == K_UP:
