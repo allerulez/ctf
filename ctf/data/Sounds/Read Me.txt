@@ -1,0 +1,23 @@
+SoundPack by Sinfulkitten
+august, 2000
+
+Because few peeps that have heard some of my sounds i went ahead and made a pack. All the radio wavs execpt for the terwin and ctwin i made myself. Along with opera,arabstreets, and afew of the pain/death wavs i did. Arabstreets is not yet finished but i threw it in here anyways. Anyways enjoy and if i get enough postive response from this pack lol i will make another one with my other sounds when completed.
+
+INSTALL
+
+Weapon,C-4 and ric :  c:\sierra\half-life\cstrike\sound\weapons
+Hostage :              c:\sierra\half-life\cstrike\sound\hostage
+radio:		     c:\sierra\half-life\cstrike\sound\radio
+pain,headshot:	     c:\sierra\half-life\cstrike\sound\player
+
+
+
+
+
+
+
+
+info or comment: 
+
+http://pub39.ezboard.com/bkittensrealm	
+

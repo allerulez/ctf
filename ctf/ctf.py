@@ -75,17 +75,16 @@ score_font_size = 25
 player_score_text = pygame.font.Font(text_font, score_font_size)
 
 
-
 def set_art_pack(pack):
 	pack_file = open("data/pack_file.txt", "w")
 	pack_file.write(str(pack))
 	pack_file.close()
-	"""
+	global art_pack
 	if art_pack == str(pack):
 		pass
 	else:
 		art_pack = str(pack)
-	"""
+
 
 def text_objects(text, font, color = (255,255,255, 1)):
     textSurface = font.render(text, True, color)
@@ -111,9 +110,11 @@ for player_TextRect in player_text_rect_list:
 	index = player_text_rect_list.index(player_TextRect)
 	mouse = pygame.mouse.get_pos()
 	screen.blit(player_text_surf_list[index], player_text_rect_list[index])
+	# --- SOUND ---
 	pygame.mixer.init()
 	pygame.mixer.music.load("data/test2.wav")
 	pygame.mixer.music.play()
+
 while choose_players == True:
 	
 
@@ -251,6 +252,8 @@ while art_menu == True:
 					 #screen_x > mouse[0] > 0 and (screen_y + font_size)/2 > mouse[1] > (screen_y - font_size)/2:
 					art_menu = False
 					set_art_pack(art_packs_list[index])
+					art_pack = art_packs_list[index]
+					print(art_pack)
 
 			elif not TextRect.collidepoint(mouse) and hoover_list[index]:
 				hoover_list[index] = False
@@ -258,8 +261,10 @@ while art_menu == True:
 				screen.blit(TextSurf, TextRect)
 				pygame.display.update()
 	pygame.display.update()
+
 screen.fill((0,0,0,1))
 
+# --- SOUND ---
 pygame.mixer.music.stop()
 pygame.mixer.music.load("data/glass.wav")
 pygame.mixer.music.play()
@@ -341,6 +346,8 @@ for i in range(0, len(current_map.start_positions)):
 	pos = current_map.start_positions[i]
 	# Create the tank, images.tank contains the image
 	tank = gameobjects.Tank(pos[0], pos[1], pos[2], images.tanks[i], space)
+	
+
 	# Add the tanks base to the map and game_objects_list
 	base = gameobjects.GameVisibleObject(pos[0],pos[1], pygame.transform.scale(images.bases[i], \
 		(images.bases[i].get_width()*images.IM_SCALE, images.bases[i].get_height()*images.IM_SCALE)))
@@ -505,9 +512,11 @@ screen_x = current_map.width*images.TILE_SIZE
 #tab_x = 100*images.IM_SCALE
 #tab_y  = 100 * images.IM_SCALE
 while running:
+	# --- SOUND ---
 	if not pygame.mixer.music.get_busy():
 		pygame.mixer.music.load("data/gun.wav")
 		pygame.mixer.music.play()
+		pygame.mixer.music.set_volume(0.3)
 
 	#-- Handle the events
 	for event in pygame.event.get():

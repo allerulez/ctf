@@ -297,6 +297,9 @@ class Tank(GamePhysicsObject):
     missile = Missile(self.body.position[0], self.body.position[1], math.degrees(self.body.angle), images.missile, space, self)
     self.velocity = -1
     Tank.update(missile)
+    pygame.mixer.music.stop()
+    pygame.mixer.music.load("data/Sounds/ak47-1.wav")
+    pygame.mixer.music.play()
     if self.is_overheated:
       self.flag = None
       self.body.position[0] = self.start_position[0]
