@@ -378,6 +378,8 @@ for i in range(0, len(current_map.start_positions)):
 
 # This function call creates a new flag object at coordinates x, y
 flag = gameobjects.Flag(current_map.width/2, current_map.height/2)
+powerupish = gameobjects.Powerup(0.5, 1.5)
+game_objects_list.append(powerupish)
 game_objects_list.append(flag)
 game_objects_def_pos_list = list(game_objects_list)
 # --- Creation of objects END ---
@@ -428,12 +430,15 @@ def missile_hit(space, arb):
 def tank_hit(space, arb):
 	if not arb.shapes[1].parent == arb.shapes[0].parent.tank and not arb.shapes[1].parent.is_protected:
 		arb.shapes[1].parent.hp -= 1
+		if arb.shapes[0].parent.tank.powerup and arb.shapes[0].parent.tank.powerup.type == arb.shapes[0].parent.tank.powerup.sticky_ammo:
+			puobj = gameobjects.Powerup(arb.shapes[1].parent.x_pos, arb.shapes[1].parent.y_pos) 
+			puobj.type = gameobjects.Powerup.speed_down
+			arb.shapes[1].parent.powerup = puobj
+			arb.shapes[1].parent.powerup.activate(arb.shapes[1].parent, arb.shapes[1].parent.powerup.speed_down)
 		if arb.shapes[1].parent.hp == 1:
 			tank_exp_list.append(tank_explosion(arb.shapes[1].parent, images.small_explosion))
 			game_objects_list.remove(arb.shapes[1].parent.hp_vis[0])
 		elif arb.shapes[1].parent.hp == 0:
-			
-
 			arb.shapes[0].parent.tank.kills_increment(arb.shapes[1].parent)
 			#arb.shapes[1].parent.score_red()
 			global current_map
@@ -667,6 +672,7 @@ while running:
 
 	for i in range(len(tanks_list)):
 		gameobjects.Tank.try_grab_flag(tanks_list[i], flag)
+		tanks_list[i].try_grab_powerup(powerupish)
 		if tanks_list[i].score >= win_score:
 			running = False
 		elif gameobjects.Tank.has_won(tanks_list[i]):
@@ -677,7 +683,10 @@ while running:
 			tanks_list[i].maximum_speed = 1
 		if i < len(tanks_list)-players:
 			ai.SimpleAi.decide(ais[i])
-
+		if tanks_list[i].is_powered_up and tanks_list[i].powerup and tanks_list[i].powerup.timer and tanks_list[i].powerup.timer < time.time():
+			tanks_list[i].is_powered_up = False
+			tanks_list[i].powerup = None
+			powerupish = gameobjects.Powerup(0.5, 1.5)
 	#   Update object that depends on an other object position (for instance a flag)
 	for obj in game_objects_list:
 	  obj.post_update()

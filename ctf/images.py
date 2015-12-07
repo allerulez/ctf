@@ -72,6 +72,7 @@ def get_missile(pack):
     return load_image(str(pack)+'/missile.png')
 """
 
+
 missile = load_image(str(pack)+'/missile.png')
 #def get_grass(pack):
 grass = load_image(str(pack)+'/grass.png')
@@ -87,6 +88,8 @@ portal = load_image(str(pack)+'/portal.png')
 tanks     = [load_image(str(pack)+'/tank_orange.png'), load_image(str(pack)+'/tank_blue.png'), load_image(str(pack)+'/tank_white.png'),
              load_image(str(pack)+'/tank_yellow.png'), load_image(str(pack)+'/tank_red.png'),  load_image(str(pack)+'/tank_gray.png')]
 
+
+sticky_missile = load_image('standard/sticky_missile.png')
 # Image of overheat
 overheat = load_image('overheat.png')
 

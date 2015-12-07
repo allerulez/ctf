@@ -4,6 +4,7 @@ import pymunk
 import math
 import boxmodels
 import time
+import random
 
 
 # This function is used to convert coordinates in the physic engine into the display coordinates
@@ -172,6 +173,9 @@ class Tank(GamePhysicsObject):
     self.sp                   = GameVisibleObject(self.x_pos, self.y_pos, pygame.transform.scale(images.spawn_protect,(images.TILE_SIZE, images.TILE_SIZE)))
     self.kills                = 0
     self.deaths               = 0
+    self.powerup              = None
+    self.is_powered_up        = False
+    self.damage               = 1
     
     # Define the start position, which is also the position where the tank has to return with the flag
     self.start_position       = pymunk.Vec2d(self.x_pos, self.y_pos)
@@ -287,6 +291,17 @@ class Tank(GamePhysicsObject):
         self.is_on_tank     = True
         self.maximum_speed  = 2
 
+  def try_grab_powerup(self, powerup):
+    #powerup = Powerup(powerup_pos[0], powerup_pos[1], Powerup.random_powerup(powerup))
+    if (not self.is_powered_up):
+      powerup_pos = pymunk.Vec2d(0.5, 1.5)
+      if((powerup_pos - self.body.position).length < 0.5):
+        print("touched the powerup")
+        print(powerup.type)
+        powerup.activate(self, powerup.type)
+    #else:
+    #  self.powerup = powerup
+
   # Check if the current tank has won (if it is has the flag and it is close to its start position)
   def has_won(self):
     return self.flag != None and (self.start_position - self.body.position).length < 0.2
@@ -294,7 +309,12 @@ class Tank(GamePhysicsObject):
   # Call this function to shoot forward (current implementation does nothing ! you need to implement it yourself)
   def shoot(self, space):
    # if not self.start or time.time() > self.start + 2:
-    missile = Missile(self.body.position[0], self.body.position[1], math.degrees(self.body.angle), images.missile, space, self)
+    if self.powerup and self.powerup.sticky_ammo == self.powerup.type: #Powerup.sticky_ammo:
+      missile = Missile(self.body.position[0], self.body.position[1], \
+      math.degrees(self.body.angle), images.sticky_missile, space, self)
+    else:
+      missile = Missile(self.body.position[0], self.body.position[1], \
+      math.degrees(self.body.angle), images.missile, space, self)
     self.velocity = -1
     Tank.update(missile)
     pygame.mixer.music.stop()
@@ -369,6 +389,89 @@ class Speed_powerup(GameVisibleObject):
     self.is_on_tank   = False
     GameVisibleObject.__init__(self, x, y, pygame.transform.scale(images.speed_powerup, (images.TILE_SIZE, images.TILE_SIZE)))
 """
+class Powerup(GameVisibleObject):
+  def __init__(self, x, y, powerup_kind= None):
+    
+    self.type = self.random_powerup()
+    self.type_img = images.load_image('powerup.png')
+    self.sprite = pygame.transform.scale(self.type_img, (images.TILE_SIZE, images.TILE_SIZE))
+    self.x_pos = x
+    self.y_pos = y
+    self.timer = 0
+    GameVisibleObject.__init__(self, x, y, self.sprite)
+  def random_powerup(self):
+    return random.choice([self.speed_up, self.damage_up, self.shield, self.speed_down, self.extreme_overheat,
+                    self.sticky_ammo, self.automatic_fire]) #self.god_mode])
+
+  def speed_up(self, tank, value):
+    # Activate
+    if value:
+      tank.maximum_speed *= 2
+      tank.acceleration *= 2
+    # Deactivate
+    else:
+      tank.acceleration /= 2
+      tank.maximum_speed /= 2
+
+    tank.is_powered_up = value
+    tank.powerup       = self
+
+  def damage_up(self, tank, value):
+    if value:
+      tank.damage *= 2
+    else:
+      tank.damage /= 2
+
+    tank.is_powered_up = value
+    tank.powerup       = self
+
+  def shield(self, tank, value):
+    if value:
+      tank.death_timer += time.time() + 5
+      tank.is_protected = True
+
+
+    self.powerup = self
+    tank.is_powered_up = value
+    #else:
+
+  def speed_down(self, tank, value):
+    self.speed_up(tank, not value)
+    tank.is_powered_up = value
+    tank.powerup = self
+
+
+
+  def extreme_overheat(self, tank, value):
+    if value:
+      tank.start = time.time() + 8
+
+
+    tank.is_overheated = value
+    tank.powerup = self
+    tank.is_powered_up = value
+
+  def sticky_ammo(self, tank, value):
+    tank.powerup = self
+    tank.is_powered_up = value
+
+  def automatic_fire(self, tank, value):
+    tank.powerup = self
+    tank.is_powered_up = value
+  
+  """
+  def god_mode(self, tank, value):
+    
+    tank.powerup = self
+  """
+
+  def activate(self, tank, powerup_fn):
+    powerup_fn(tank, True)
+    self.timer = time.time() + 20
+    
+  def deactivate(self, tank, powerup_fn):
+    powerup_fn(tank, False)
+
 class HP(GameVisibleObject):
   def __init__(self, x, y):
     GameVisibleObject.__init__(self, x, y,  pygame.transform.scale(images.hp, (10*images.IM_SCALE,10*images.IM_SCALE)))
@@ -392,6 +495,6 @@ class Missile(GamePhysicsObject):
     self.angular_velocity     = 0.0
     self.maximum_speed        = 25.0
     self.shape.collision_type = 0
-    self.sprite               = pygame.transform.scale(sprite, (images.TILE_SIZE//2, images.TILE_SIZE//2))
+    self.sprite             = pygame.transform.scale(sprite, (images.TILE_SIZE//2, images.TILE_SIZE//2))
     # Define the start position, which is the position of the shooting tank
     self.start_position       = pymunk.Vec2d(x, y)
