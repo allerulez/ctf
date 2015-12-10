@@ -23,6 +23,7 @@ rockbox_mov = BoxModel(images.rockbox, True, True)
 
 portal = BoxModel(images.portal, False, False)
 
+
 # This function is used to select the model of a box in function of a number.
 # It is mostly used when initializing the boxes from the information contained
 # in the map.

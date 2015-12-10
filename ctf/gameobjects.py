@@ -294,13 +294,13 @@ class Tank(GamePhysicsObject):
   def try_grab_powerup(self, powerup):
     #powerup = Powerup(powerup_pos[0], powerup_pos[1], Powerup.random_powerup(powerup))
     if (not self.is_powered_up):
-      powerup_pos = pymunk.Vec2d(0.5, 1.5)
+      powerup_pos = pymunk.Vec2d(powerup.x_pos, powerup.y_pos)
       if((powerup_pos - self.body.position).length < 0.5):
         print("touched the powerup")
         print(powerup.type)
-        powerup.activate(self, powerup.type)
-    #else:
-    #  self.powerup = powerup
+        powerup.activate(self, powerup.random_powerup)
+    else:
+      self.powerup = powerup
 
   # Check if the current tank has won (if it is has the flag and it is close to its start position)
   def has_won(self):
@@ -320,7 +320,7 @@ class Tank(GamePhysicsObject):
     pygame.mixer.music.stop()
     pygame.mixer.music.load("data/Sounds/ak47-1.wav")
     pygame.mixer.music.play()
-    if self.is_overheated:
+    if self.is_overheated: 
       self.flag = None
       self.body.position[0] = self.start_position[0]
       self.body.position[1] = self.start_position[1]
@@ -330,8 +330,11 @@ class Tank(GamePhysicsObject):
       self.hp = 2
       self.deaths_increment()
       return (missile, self.start, self)
-    self.is_overheated = True
-    self.start = time.time()
+    #if not self.powerup or (self.powerup and not self.powerup == self.powerup.automatic_fire):
+    if not self.powerup or self.powerup.type != self.powerup.automatic_fire:
+      self.is_overheated = True
+      self.start = time.time()
+    
     return (missile, self.start, self)
 
 # This class extends the GamePhysicsObject to handle box objects.
@@ -398,7 +401,9 @@ class Powerup(GameVisibleObject):
     self.x_pos = x
     self.y_pos = y
     self.timer = 0
+    self.powerup_timer = 20
     GameVisibleObject.__init__(self, x, y, self.sprite)
+
   def random_powerup(self):
     return random.choice([self.speed_up, self.damage_up, self.shield, self.speed_down, self.extreme_overheat,
                     self.sticky_ammo, self.automatic_fire]) #self.god_mode])
@@ -458,16 +463,11 @@ class Powerup(GameVisibleObject):
   def automatic_fire(self, tank, value):
     tank.powerup = self
     tank.is_powered_up = value
-  
-  """
-  def god_mode(self, tank, value):
-    
-    tank.powerup = self
-  """
+
 
   def activate(self, tank, powerup_fn):
-    powerup_fn(tank, True)
-    self.timer = time.time() + 20
+    powerup_fn()(tank, True)
+    self.timer = time.time() + self.powerup_timer
     
   def deactivate(self, tank, powerup_fn):
     powerup_fn(tank, False)

@@ -52,6 +52,7 @@ dead_start_list 	= []
 current_map 		= []
 portal_list 		= []
 text_count_list		= []
+powerupish			= []
 hoover_list 		= [False, False, False, False]
 tanks_color_list	= [(208,137,13,255), (13,91,208,255), (255,255,255,255), \
 					(215,227,23,255), (198,41,10,255), (123,123,123,255)]
@@ -313,12 +314,16 @@ for x in range(0, current_map.width):
 	for y in range(0, current_map.height):
 		# Get the type of boxes fo the current cell(y, x)
 		box_type = current_map.boxAt(x, y)
-		
+		print(box_type)
 		# We need to get the python object that corresponds to the model
 		box_model = boxmodels.get_model(box_type)
 		
+		if box_type == 6:
+			powerupish.append(gameobjects.Powerup(x+0.5, y+0.5)) 
+			game_objects_list.append(powerupish[-1])
+
 		# If the box model is non nyll, create a box
-		if(box_model != None):
+		elif(box_model != None):
 			# Create a "Box" using the model "box_model" at the coordinate (x,y) 
 			# (an offset of 0.5 is added since the constructor of the Box object expects to 
 			#  know the centre of the box, have a look at the coordinate system section for 
@@ -335,8 +340,9 @@ for x in range(0, current_map.width):
 				points  = [[-0, -0], [-0, 0],[0, 0],[0, -0]]
 				box.shape = pymunk.Poly(box.body, points)
 				portal_list.append(box)
-			game_objects_list.append(box)
+
 			box_dict[(x+0.5, y+0.5)] = box
+			game_objects_list.append(box)
 
 # Create the tanks
 # Loop over the starting position
@@ -378,8 +384,6 @@ for i in range(0, len(current_map.start_positions)):
 
 # This function call creates a new flag object at coordinates x, y
 flag = gameobjects.Flag(current_map.width/2, current_map.height/2)
-powerupish = gameobjects.Powerup(0.5, 1.5)
-game_objects_list.append(powerupish)
 game_objects_list.append(flag)
 game_objects_def_pos_list = list(game_objects_list)
 # --- Creation of objects END ---
@@ -435,10 +439,12 @@ def tank_hit(space, arb):
 			puobj.type = gameobjects.Powerup.speed_down
 			arb.shapes[1].parent.powerup = puobj
 			arb.shapes[1].parent.powerup.activate(arb.shapes[1].parent, arb.shapes[1].parent.powerup.speed_down)
+		if arb.shapes[0].parent.tank.powerup and arb.shapes[0].parent.tank.powerup.type == arb.shapes[0].parent.tank.powerup.damage_up:
+			arb.shapes[1].parent.hp -= 1
 		if arb.shapes[1].parent.hp == 1:
 			tank_exp_list.append(tank_explosion(arb.shapes[1].parent, images.small_explosion))
 			game_objects_list.remove(arb.shapes[1].parent.hp_vis[0])
-		elif arb.shapes[1].parent.hp == 0:
+		elif arb.shapes[1].parent.hp <= 0:
 			arb.shapes[0].parent.tank.kills_increment(arb.shapes[1].parent)
 			#arb.shapes[1].parent.score_red()
 			global current_map
@@ -662,6 +668,7 @@ while running:
 	  # acceleration.
 		for obj in game_objects_list:
 			obj.update()
+
 		skip_update = 5
 	else:
 		skip_update -= 1
@@ -672,7 +679,8 @@ while running:
 
 	for i in range(len(tanks_list)):
 		gameobjects.Tank.try_grab_flag(tanks_list[i], flag)
-		tanks_list[i].try_grab_powerup(powerupish)
+		for power in powerupish:
+			tanks_list[i].try_grab_powerup(power)
 		if tanks_list[i].score >= win_score:
 			running = False
 		elif gameobjects.Tank.has_won(tanks_list[i]):
@@ -686,7 +694,7 @@ while running:
 		if tanks_list[i].is_powered_up and tanks_list[i].powerup and tanks_list[i].powerup.timer and tanks_list[i].powerup.timer < time.time():
 			tanks_list[i].is_powered_up = False
 			tanks_list[i].powerup = None
-			powerupish = gameobjects.Powerup(0.5, 1.5)
+			#powerupish = gameobjects.Powerup(0.5, 1.5)
 	#   Update object that depends on an other object position (for instance a flag)
 	for obj in game_objects_list:
 	  obj.post_update()
