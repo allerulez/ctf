@@ -319,7 +319,7 @@ for x in range(0, current_map.width):
 		box_model = boxmodels.get_model(box_type)
 		
 		if box_type == 6:
-			powerupish.append(gameobjects.Powerup(x+0.5, y+0.5)) 
+			powerupish.append(gameobjects.Powerup(x+0.5, y+0.5))
 			game_objects_list.append(powerupish[-1])
 
 		# If the box model is non nyll, create a box
@@ -434,18 +434,17 @@ def missile_hit(space, arb):
 def tank_hit(space, arb):
 	if not arb.shapes[1].parent == arb.shapes[0].parent.tank and not arb.shapes[1].parent.is_protected:
 		arb.shapes[1].parent.hp -= 1
-		if arb.shapes[0].parent.tank.powerup and arb.shapes[0].parent.tank.powerup.type == arb.shapes[0].parent.tank.powerup.sticky_ammo:
-			puobj = gameobjects.Powerup(arb.shapes[1].parent.x_pos, arb.shapes[1].parent.y_pos) 
-			puobj.type = gameobjects.Powerup.speed_down
-			arb.shapes[1].parent.powerup = puobj
-			arb.shapes[1].parent.powerup.activate(arb.shapes[1].parent, arb.shapes[1].parent.powerup.speed_down)
-		if arb.shapes[0].parent.tank.powerup and arb.shapes[0].parent.tank.powerup.type == arb.shapes[0].parent.tank.powerup.damage_up:
+		if arb.shapes[0].parent.tank.powerup and arb.shapes[0].parent.tank.powerup == gameobjects.Powerup.sticky_ammo:
+			arb.shapes[1].powerup = gameobjects.Powerup.speed_down
+		if arb.shapes[0].parent.tank.powerup and arb.shapes[0].parent.tank.powerup == gameobjects.Powerup.damage_up:
 			arb.shapes[1].parent.hp -= 1
 		if arb.shapes[1].parent.hp == 1:
 			tank_exp_list.append(tank_explosion(arb.shapes[1].parent, images.small_explosion))
 			game_objects_list.remove(arb.shapes[1].parent.hp_vis[0])
 		elif arb.shapes[1].parent.hp <= 0:
 			arb.shapes[0].parent.tank.kills_increment(arb.shapes[1].parent)
+			if arb.shapes[1].parent.powerup:
+				arb.shapes[1].parent.deactivate()
 			#arb.shapes[1].parent.score_red()
 			global current_map
 			for index in range(len(tanks_list)):
@@ -584,6 +583,8 @@ while running:
 					dead_start_list.append(time.time())
 					game_objects_list.append(player_dead)
 					text_list.append(player_dead)
+					if tanks_list[0].powerup:
+						tanks_list[0].deactivate()
 				game_objects_list.append(gameobjects.Tank.shoot(tanks_list[0], space)[0])
 		if players > 1:
 			if event.type == KEYDOWN and event.key == K_w:
@@ -608,6 +609,8 @@ while running:
 					dead_start_list.append(time.time())
 					game_objects_list.append(player_dead)
 					text_list.append(player_dead)
+					if tanks_list[1].powerup:
+						tanks_list[1].deactivate()
 				game_objects_list.append(gameobjects.Tank.shoot(tanks_list[1], space)[0])
 
 	#		if event.type == KEYDOWN and event.key == K_SPACE:
@@ -646,7 +649,8 @@ while running:
 			tank.portal_time = time.time()
 		if tank.death_timer+4 < time.time():
 			tank.is_protected = False
-
+		if tank.powerup and tank.powerup_timer + 10 < time.time():
+			tank.deactivate()
 
 		#player_largeText = pygame.font.Font(text_font, int(font_size*0.6))
 		#player_TextSurf, player_TextRect = text_objects("number of players: " + str(players), player_largeText)
@@ -680,7 +684,8 @@ while running:
 	for i in range(len(tanks_list)):
 		gameobjects.Tank.try_grab_flag(tanks_list[i], flag)
 		for power in powerupish:
-			tanks_list[i].try_grab_powerup(power)
+			if not tanks_list[i].powerup:
+				tanks_list[i].try_grab_powerup(power)
 		if tanks_list[i].score >= win_score:
 			running = False
 		elif gameobjects.Tank.has_won(tanks_list[i]):
@@ -691,9 +696,10 @@ while running:
 			tanks_list[i].maximum_speed = 1
 		if i < len(tanks_list)-players:
 			ai.SimpleAi.decide(ais[i])
-		if tanks_list[i].is_powered_up and tanks_list[i].powerup and tanks_list[i].powerup.timer and tanks_list[i].powerup.timer < time.time():
-			tanks_list[i].is_powered_up = False
-			tanks_list[i].powerup = None
+		if tanks_list[i].is_powered_up and tanks_list[i].powerup and tanks_list[i].powerup_timer and tanks_list[i].powerup_timer+10 < time.time():
+			tanks_list[i].deactivate()
+			#tanks_list[i].is_powered_up = False
+			#tanks_list[i].powerup = None
 			#powerupish = gameobjects.Powerup(0.5, 1.5)
 	#   Update object that depends on an other object position (for instance a flag)
 	for obj in game_objects_list:

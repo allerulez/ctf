@@ -175,6 +175,7 @@ class Tank(GamePhysicsObject):
     self.deaths               = 0
     self.powerup              = None
     self.is_powered_up        = False
+    self.powerup_timer        = 0
     self.damage               = 1
     
     # Define the start position, which is also the position where the tank has to return with the flag
@@ -293,14 +294,27 @@ class Tank(GamePhysicsObject):
 
   def try_grab_powerup(self, powerup):
     #powerup = Powerup(powerup_pos[0], powerup_pos[1], Powerup.random_powerup(powerup))
-    if (not self.is_powered_up):
-      powerup_pos = pymunk.Vec2d(powerup.x_pos, powerup.y_pos)
+    powerup_pos = pymunk.Vec2d(powerup.x_pos, powerup.y_pos)
+    if not self.is_powered_up:
       if((powerup_pos - self.body.position).length < 0.5):
         print("touched the powerup")
-        print(powerup.type)
-        powerup.activate(self, powerup.random_powerup)
-    else:
-      self.powerup = powerup
+        self.powerup = Powerup.random_powerup()
+        self.activate()
+    else: 
+      if((powerup_pos - self.body.position).length < 0.5):
+        self.deactivate()
+        self.powerup = Powerup.random_powerup() #Powerup(self.x_pos, self.y_pos)
+        self.activate()
+
+
+  def activate(self):
+    self.powerup(self, True)
+    self.powerup_timer = time.time()
+    
+  def deactivate(self):
+    self.powerup(self, False)
+    self.is_powered_up = False
+
 
   # Check if the current tank has won (if it is has the flag and it is close to its start position)
   def has_won(self):
@@ -309,7 +323,7 @@ class Tank(GamePhysicsObject):
   # Call this function to shoot forward (current implementation does nothing ! you need to implement it yourself)
   def shoot(self, space):
    # if not self.start or time.time() > self.start + 2:
-    if self.powerup and self.powerup.sticky_ammo == self.powerup.type: #Powerup.sticky_ammo:
+    if self.powerup and self.powerup == Powerup.sticky_ammo: #Powerup.sticky_ammo:
       missile = Missile(self.body.position[0], self.body.position[1], \
       math.degrees(self.body.angle), images.sticky_missile, space, self)
     else:
@@ -331,7 +345,7 @@ class Tank(GamePhysicsObject):
       self.deaths_increment()
       return (missile, self.start, self)
     #if not self.powerup or (self.powerup and not self.powerup == self.powerup.automatic_fire):
-    if not self.powerup or self.powerup.type != self.powerup.automatic_fire:
+    if not self.powerup or self.powerup != Powerup.automatic_fire:
       self.is_overheated = True
       self.start = time.time()
     
@@ -395,7 +409,7 @@ class Speed_powerup(GameVisibleObject):
 class Powerup(GameVisibleObject):
   def __init__(self, x, y, powerup_kind= None):
     
-    self.type = self.random_powerup()
+    #self.type = self.random_powerup()
     self.type_img = images.load_image('powerup.png')
     self.sprite = pygame.transform.scale(self.type_img, (images.TILE_SIZE, images.TILE_SIZE))
     self.x_pos = x
@@ -404,73 +418,80 @@ class Powerup(GameVisibleObject):
     self.powerup_timer = 20
     GameVisibleObject.__init__(self, x, y, self.sprite)
 
-  def random_powerup(self):
-    return random.choice([self.speed_up, self.damage_up, self.shield, self.speed_down, self.extreme_overheat,
-                    self.sticky_ammo, self.automatic_fire]) #self.god_mode])
+  def random_powerup():
+    return random.choice([Powerup.speed_up, Powerup.damage_up, Powerup.shield, Powerup.speed_down, Powerup.extreme_overheat,
+                    Powerup.sticky_ammo, Powerup.automatic_fire]) #Powerup.god_mode])
 
-  def speed_up(self, tank, value):
+  def speed_up(tank, value):
     # Activate
     if value:
-      tank.maximum_speed *= 2
-      tank.acceleration *= 2
+      tank.maximum_speed = 2
+      
     # Deactivate
     else:
-      tank.acceleration /= 2
-      tank.maximum_speed /= 2
+      tank.maximum_speed = 1
+      tank.powerup = None
+
 
     tank.is_powered_up = value
-    tank.powerup       = self
 
-  def damage_up(self, tank, value):
+  def damage_up(tank, value):
     if value:
-      tank.damage *= 2
+      tank.damage = 2
+
     else:
-      tank.damage /= 2
+      tank.damage = 2
+      tank.powerup = None
+
 
     tank.is_powered_up = value
-    tank.powerup       = self
 
-  def shield(self, tank, value):
+  def shield(tank, value):
     if value:
-      tank.death_timer += time.time() + 5
+      tank.death_timer = time.time() + 5
       tank.is_protected = True
+    else:
+      tank.powerup = None
 
-
-    self.powerup = self
     tank.is_powered_up = value
     #else:
 
-  def speed_down(self, tank, value):
-    self.speed_up(tank, not value)
+  def speed_down(tank, value):
+    # Activate
+    if value:
+      tank.maximum_speed = 0.5
+
+    # Deactivate
+    else:
+      tank.maximum_speed = 1    
+      tank.powerup = None
     tank.is_powered_up = value
-    tank.powerup = self
 
 
 
-  def extreme_overheat(self, tank, value):
+  def extreme_overheat(tank, value):
     if value:
       tank.start = time.time() + 8
-
+    else:
+      tank.powerup = None
 
     tank.is_overheated = value
-    tank.powerup = self
     tank.is_powered_up = value
 
-  def sticky_ammo(self, tank, value):
-    tank.powerup = self
+  def sticky_ammo(tank, value):
+    if value:
+      pass
+    else:
+      tank.powerup = None
     tank.is_powered_up = value
 
-  def automatic_fire(self, tank, value):
-    tank.powerup = self
+  def automatic_fire(tank, value):
+    if value:
+      pass
+    else:
+      tank.powerup = None
     tank.is_powered_up = value
 
-
-  def activate(self, tank, powerup_fn):
-    powerup_fn()(tank, True)
-    self.timer = time.time() + self.powerup_timer
-    
-  def deactivate(self, tank, powerup_fn):
-    powerup_fn(tank, False)
 
 class HP(GameVisibleObject):
   def __init__(self, x, y):
