@@ -112,9 +112,11 @@ for player_TextRect in player_text_rect_list:
 	mouse = pygame.mouse.get_pos()
 	screen.blit(player_text_surf_list[index], player_text_rect_list[index])
 	# --- SOUND ---
-	pygame.mixer.init()
-	pygame.mixer.music.load("data/test2.wav")
-	pygame.mixer.music.play()
+pygame.mixer.init()
+pygame.mixer.music.load("data/Sounds/moose.wav")
+pygame.mixer.music.play()
+pygame.mixer.music.set_volume(0.3)
+
 
 while choose_players == True:
 	
@@ -264,12 +266,6 @@ while art_menu == True:
 	pygame.display.update()
 
 screen.fill((0,0,0,1))
-
-# --- SOUND ---
-pygame.mixer.music.stop()
-pygame.mixer.music.load("data/glass.wav")
-pygame.mixer.music.play()
-
 
 #-- Resize the screen to the size of the current level
 screen = pygame.display.set_mode(current_map.rect().size)
@@ -512,9 +508,8 @@ screen_x = current_map.width*images.TILE_SIZE
 while running:
 	# --- SOUND ---
 	if not pygame.mixer.music.get_busy():
-		pygame.mixer.music.load("data/gun.wav")
+		pygame.mixer.music.load("data/Sounds/moose.wav")
 		pygame.mixer.music.play()
-		pygame.mixer.music.set_volume(0.3)
 
 	#-- Handle the events
 	for event in pygame.event.get():
