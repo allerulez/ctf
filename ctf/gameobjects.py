@@ -155,7 +155,8 @@ class Tank(GamePhysicsObject):
     # This variable is used to access the flag object, if the current tank is carrying the flag
     self.flag                 = None
     # Impose a maximum speed to the tank
-    self.maximum_speed        = 1.0
+    self.default_max_speed    = 2
+    self.maximum_speed        = 2
     self.x_pos                = x
     self.y_pos                = y
     self.sprite               = sprite #pygame.transform.scale(sprite,(sprite.get_width()*images.IM_SCALE, sprite.get_height()*images.IM_SCALE))
@@ -212,11 +213,11 @@ class Tank(GamePhysicsObject):
   
   # Call this function to start turning in the left direction
   def turn_left(self):
-    self.angular_acceleration = -0.2
+    self.angular_acceleration = -1
   
   # Call this function to start turning in the right direction
   def turn_right(self):
-    self.angular_acceleration = 0.2
+    self.angular_acceleration = 1
   
   def update(self):
     # Update the velocity of the tank in function of the physic simulation (in case of colision, the physic simulation will change the speed of the tank)
@@ -290,15 +291,15 @@ class Tank(GamePhysicsObject):
         # Grab the flag !
         self.flag           = flag
         self.is_on_tank     = True
-        self.maximum_speed  = 2
+        self.maximum_speed  = 3
 
   def try_grab_powerup(self, powerup):
     #powerup = Powerup(powerup_pos[0], powerup_pos[1], Powerup.random_powerup(powerup))
     powerup_pos = pymunk.Vec2d(powerup.x_pos, powerup.y_pos)
     if not self.is_powered_up:
       if((powerup_pos - self.body.position).length < 0.5):
-        print("touched the powerup")
         self.powerup = Powerup.random_powerup()
+        print(self.powerup)
         self.activate()
     else: 
       if((powerup_pos - self.body.position).length < 0.5):
@@ -340,7 +341,8 @@ class Tank(GamePhysicsObject):
       self.body.position[1] = self.start_position[1]
       self.body.angle = self.start_orientation
       self.is_overheated = False
-      self.maximum_speed = 1
+      self.maximum_speed = self.default_max_speed
+      #self.start = time.time()-3
       self.hp = 2
       self.deaths_increment()
       return (missile, self.start, self)
@@ -425,11 +427,11 @@ class Powerup(GameVisibleObject):
   def speed_up(tank, value):
     # Activate
     if value:
-      tank.maximum_speed = 2
+      tank.maximum_speed = 3
       
     # Deactivate
     else:
-      tank.maximum_speed = 1
+      tank.maximum_speed = tank.default_max_speed
       tank.powerup = None
 
 
@@ -459,11 +461,11 @@ class Powerup(GameVisibleObject):
   def speed_down(tank, value):
     # Activate
     if value:
-      tank.maximum_speed = 0.5
+      tank.maximum_speed = 1
 
     # Deactivate
     else:
-      tank.maximum_speed = 1    
+      tank.maximum_speed = tank.default_max_speed
       tank.powerup = None
     tank.is_powered_up = value
 
@@ -472,10 +474,10 @@ class Powerup(GameVisibleObject):
   def extreme_overheat(tank, value):
     if value:
       tank.start = time.time() + 8
+      tank.is_overheated = True
     else:
       tank.powerup = None
 
-    tank.is_overheated = value
     tank.is_powered_up = value
 
   def sticky_ammo(tank, value):
@@ -510,7 +512,7 @@ class Missile(GamePhysicsObject):
     # Define variable used to apply motion to the missile
     self.tank                 = tank
     self.orientation          = orientation
-    self.acceleration         = 15.0
+    self.acceleration         = 20.0
     self.velocity             = 10.0
     self.angular_acceleration = 0.0
     self.angular_velocity     = 0.0

@@ -314,7 +314,6 @@ for x in range(0, current_map.width):
 	for y in range(0, current_map.height):
 		# Get the type of boxes fo the current cell(y, x)
 		box_type = current_map.boxAt(x, y)
-		print(box_type)
 		# We need to get the python object that corresponds to the model
 		box_model = boxmodels.get_model(box_type)
 		
@@ -390,18 +389,6 @@ game_objects_def_pos_list = list(game_objects_list)
 
 def default_pos(tile):
 	return tile in game_objects_def_pos_list
-"""
-def overlay(state):
-	global screen
-
-	state:
-		#for tank in tanks_list:
-		tab_overlay = pygame.draw.rect(screen, (0,0,0), ((0,0), (400,300)), 1)
-		screen.blit(images.tab, tab_overlay)
-		pygame.display.update()
-	else:
-		pass
-"""
 
 # Collision handlers and functions ----START----
 
@@ -435,7 +422,8 @@ def tank_hit(space, arb):
 	if not arb.shapes[1].parent == arb.shapes[0].parent.tank and not arb.shapes[1].parent.is_protected:
 		arb.shapes[1].parent.hp -= 1
 		if arb.shapes[0].parent.tank.powerup and arb.shapes[0].parent.tank.powerup == gameobjects.Powerup.sticky_ammo:
-			arb.shapes[1].powerup = gameobjects.Powerup.speed_down
+			arb.shapes[1].parent.powerup = gameobjects.Powerup.speed_down
+			arb.shapes[1].parent.activate()
 		if arb.shapes[0].parent.tank.powerup and arb.shapes[0].parent.tank.powerup == gameobjects.Powerup.damage_up:
 			arb.shapes[1].parent.hp -= 1
 		if arb.shapes[1].parent.hp == 1:
@@ -462,7 +450,7 @@ def tank_hit(space, arb):
 			arb.shapes[1].parent.body.position = arb.shapes[1].parent.start_position
 			arb.shapes[1].parent.body.angle = arb.shapes[1].parent.start_orientation
 			arb.shapes[1].parent.hp = 2
-			arb.shapes[1].parent.maximum_speed = 1.0
+			arb.shapes[1].parent.maximum_speed = arb.shapes[1].parent.default_max_speed
 	if not arb.shapes[1].parent == arb.shapes[0].parent.tank and arb.shapes[0].parent in game_objects_list:
 		space.add_post_step_callback(space.remove, arb.shapes[0], arb.shapes[0].body)
 		game_objects_list.remove(arb.shapes[0].parent)
@@ -501,7 +489,7 @@ space.add_collision_handler(0, 2, None, box_hit)
 space.add_collision_handler(1, 4, None, tank_portal)
 space.add_collision_handler(0, 10, None, other_hit)
 space.add_collision_handler(0, 4, None, other_hit)
-#space.add_collision_handler(0, 3, None, rock_hit)
+
 # Collision handlers and functions ----END----
 
 
@@ -539,27 +527,6 @@ while running:
 				paused = True
 				game_paused = gameobjects.GameVisibleObject(current_map.width/2,current_map.height/2 , images.pause)
 				game_objects_list.append(game_paused)
-			"""
-			if event.type == KEYDOWN and event.key == K_TAB:
-				tab = gameobjects.Tab(current_map.width / 2, current_map.height / 2)
-				game_objects_list.append(tab)
-				
-				tab = gameobjects.GameVisibleObject(current_map.width/2,current_map.height/2 , \
-					pygame.transform.scale(images.tab, (400*images.IM_SCALE, 300*images.IM_SCALE)))
-				game_objects_list.append(tab)
-				tab_index = 0
-				for tank in tanks_list:
-
-					textsurf_tab, textrect_tab = text_objects(str(tank.kills), tab_text)
-					tab_vis = gameobjects.GameVisibleObject(current_map.width * 0.6, (current_map.height*0.2835)+0.44*tab_index, textsurf_tab)
-					game_objects_list.append(tab_vis)
-					tab_y += 100
-					tab_index += 1
-				
-			elif event.type == KEYUP and event.key == K_TAB:
-				game_objects_list.remove(tab)
-			"""
-
 			if event.type == KEYDOWN and event.key == K_UP:
 				gameobjects.Tank.accelerate(tanks_list[0])
 			elif event.type == KEYUP and event.key == K_UP:
@@ -693,7 +660,7 @@ while running:
 			tanks_list[i].flag = None
 			flag.is_on_tank = False
 			flag.reset_flag()
-			tanks_list[i].maximum_speed = 1
+			tanks_list[i].maximum_speed = tanks_list[i].default_max_speed
 		if i < len(tanks_list)-players:
 			ai.SimpleAi.decide(ais[i])
 		if tanks_list[i].is_powered_up and tanks_list[i].powerup and tanks_list[i].powerup_timer and tanks_list[i].powerup_timer+10 < time.time():
