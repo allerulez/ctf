@@ -53,7 +53,7 @@ current_map 		= []
 portal_list 		= []
 text_count_list		= []
 powerupish			= []
-hoover_list 		= [False, False, False, False]
+hoover_list 		= [False, False, False, False, False]
 tanks_color_list	= [(208,137,13,255), (13,91,208,255), (255,255,255,255), \
 					(215,227,23,255), (198,41,10,255), (123,123,123,255)]
 art_packs_list 		= ["standard", "potato"]
@@ -63,7 +63,7 @@ win_score			= 10
 #   Define the current level
 pygame.display.set_caption('Capture the Flag')
 screen_x = 800
-screen_y = 600
+screen_y = 800
 #font_x 	= screen_x/2
 #font_y  = screen_y/2
 font_size = 115
@@ -149,7 +149,7 @@ while choose_players == True:
 	pygame.display.update()
 
 screen.fill((0,0,0,1))
-hoover_list 		= [False, False, False, False]
+hoover_list 		= [False, False, False, False, False]
 
 map_nr = 1
 for i in maps.maps_list:
@@ -211,9 +211,9 @@ while start_menu == True:
 
 
 
-
+"""
 screen.fill((0,0,0,1))
-hoover_list 		= [False, False, False, False]
+hoover_list 		= [False, False, False, False, False]
 
 text_y = 115
 
@@ -266,7 +266,7 @@ while art_menu == True:
 	pygame.display.update()
 
 screen.fill((0,0,0,1))
-
+"""
 #-- Resize the screen to the size of the current level
 screen = pygame.display.set_mode(current_map.rect().size)
 import images
@@ -330,7 +330,7 @@ for x in range(0, current_map.width):
 			elif box_type == 1:				
 				box.shape.collision_type = 10
 				box.hp = 3
-			elif box_type == 5:
+			elif box_type != 6 and box_type in range(5, 9):
 				box.shape.collision_type = 4
 				points  = [[-0, -0], [-0, 0],[0, 0],[0, -0]]
 				box.shape = pymunk.Poly(box.body, points)
@@ -378,7 +378,7 @@ for i in range(0, len(current_map.start_positions)):
 		ais.append(ai.SimpleAi(tanks_list[i], game_objects_list, tanks_list, space))
 
 # This function call creates a new flag object at coordinates x, y
-flag = gameobjects.Flag(current_map.width/2, current_map.height/2)
+flag = gameobjects.Flag(current_map.flag_position[0], current_map.flag_position[1])
 game_objects_list.append(flag)
 game_objects_def_pos_list = list(game_objects_list)
 # --- Creation of objects END ---
@@ -465,8 +465,19 @@ def box_hit(space, arb):
 
 def tank_portal(space, arb):
 	if not arb.shapes[0].parent.is_portal_cd:
-		pos = random.choice(portal_list)
-		arb.shapes[0].parent.body.position = pymunk.Vec2d(pos.x_pos, pos.y_pos)
+		portal = random.choice(portal_list)
+		delta_x = 0
+		delta_y = 0
+		if portal.boxmodel.orientation == 0:
+			delta_y = 1 
+		elif portal.boxmodel.orientation == 90:
+			delta_x = 1
+		elif portal.boxmodel.orientation == 180:
+			delta_y = -1
+		else:
+			delta_x = -1
+
+		arb.shapes[0].parent.body.position = pymunk.Vec2d(portal.x_pos+delta_x, portal.y_pos+delta_y)
 		arb.shapes[0].parent.is_portal_cd = True
 
 		#tank.portal_time = 0
@@ -717,4 +728,22 @@ while Win_Screen:
 	for event in pygame.event.get():
 			if event.type == QUIT or (event.type == KEYDOWN and event.key == K_ESCAPE):
 				Win_Screen = False
+	pygame.display.update()
+
+
+screen.fill((55,71,79,1))
+
+text_y = 200
+font_size = 100
+player_largeText = pygame.font.Font(text_font, font_size)
+player_TextSurf, player_TextRect = text_objects("Frågor?", player_largeText)
+player_TextRect.center = ((screen_x/2), text_y)
+screen.blit(player_TextSurf, player_TextRect)
+
+
+questions = True
+while questions:
+	for event in pygame.event.get():
+		if event.type == QUIT or (event.type == KEYDOWN and event.key == K_ESCAPE):
+			questions = False
 	pygame.display.update()

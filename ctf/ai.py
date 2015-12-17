@@ -152,7 +152,7 @@ class SimpleAi(Ai):
     
     if not self.tank.is_portal_cd:
       obj = self.get_object_in_direction(5, 0)
-      if (hasattr(obj, 'boxmodel')  and obj.boxmodel == boxmodels.portal):
+      if (hasattr(obj, 'boxmodel')  and (obj.boxmodel == boxmodels.portal_n or obj.boxmodel == boxmodels.portal_s or obj.boxmodel == boxmodels.portal_e or obj.boxmodel == boxmodels.portal_w)):
         self.tank.accelerate 
 
     # Test if the tank is blocked
@@ -195,7 +195,7 @@ class SimpleAi(Ai):
       #
       # Check that there is no obstacle in front. Or if there is an obstacle that it is a box that can be moved.
       #
-      if(not self.should_turn and (not self.has_object_in_direction(0.5, 0) or (hasattr(obj, 'boxmodel')  and obj.boxmodel == boxmodels.portal) or (obj != None and self.is_object_movable(obj) and not self.is_object_tank(obj) ))):
+      if(not self.should_turn and (not self.has_object_in_direction(0.5, 0) or (hasattr(obj, 'boxmodel')  and (obj.boxmodel == boxmodels.portal_n or obj.boxmodel == boxmodels.portal_s or obj.boxmodel == boxmodels.portal_e or obj.boxmodel == boxmodels.portal_w)) or (obj != None and self.is_object_movable(obj) and not self.is_object_tank(obj) ))):
         self.tank.accelerate()
       else:
         self.should_turn = False
@@ -249,7 +249,7 @@ class SimpleAi(Ai):
     else:
       self.tank.turn_right()
       """
-    if self.get_object_in_direction( 5, self.tank.body.angle) and self.is_object_tank(self, get_object_in_direction( 5, self.tank.body.angle)):
+    if self.get_object_in_direction( 5, self.tank.body.angle) and self.is_object_tank(self.get_object_in_direction( 5, self.tank.body.angle)):
       if not start or time.time() > start + 1:
         m = gameobjects.Tank.shoot(self, space)
         missile_list.append(m)

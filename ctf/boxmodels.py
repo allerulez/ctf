@@ -5,10 +5,11 @@ import images
 # whether it can be moved, destroyed and the sprite.
 #
 class BoxModel:
-  def __init__(self, sprite, movable, destructable):
+  def __init__(self, sprite, movable, destructable, orientation = None):
     self.sprite         = sprite
     self.movable        = movable
     self.destructable   = destructable
+    self.orientation    = orientation
 
 # Define the wood box as movable and destructable
 woodbox  = BoxModel(images.woodbox,  True, True)
@@ -21,7 +22,10 @@ rockbox  = BoxModel(images.rockbox,  False, False)
 
 rockbox_mov = BoxModel(images.rockbox, True, True)
 
-portal = BoxModel(images.portal, False, False)
+portal_n = BoxModel(images.portal, False, False, 180)
+portal_s = BoxModel(images.portal, False, False, 0)
+portal_e = BoxModel(images.portal, False, False, 90)
+portal_w = BoxModel(images.portal, False, False, 270)
 
 
 # This function is used to select the model of a box in function of a number.
@@ -40,6 +44,12 @@ def get_model(type):
   elif(type == 4):
     return rockbox_mov
   elif(type == 5):
-    return portal
+    return portal_n
+  elif(type == 7):
+    return portal_s
+  elif(type == 8):
+    return portal_e
+  elif(type == 9):
+    return portal_w
   else:
     return None
