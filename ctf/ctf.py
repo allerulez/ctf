@@ -64,8 +64,6 @@ win_score			= 10
 pygame.display.set_caption('Capture the Flag')
 screen_x = 800
 screen_y = 800
-#font_x 	= screen_x/2
-#font_y  = screen_y/2
 font_size = 115
 art_font_size = 70
 text_font = 'freesansbold.ttf'
@@ -94,7 +92,8 @@ def text_objects(text, font, color = (255,255,255, 1)):
 
 for i in range(3):
 	player_largeText = pygame.font.Font(text_font, int(font_size*0.6))
-	player_TextSurf, player_TextRect = text_objects("number of players: " + str(players), player_largeText)
+	player_TextSurf, player_TextRect = \
+	text_objects("number of players: " + str(players), player_largeText)
 	player_TextRect.center = ((screen_x/2), text_y)
 	player_text_surf_list.append(player_TextSurf)
 	player_text_rect_list.append(player_TextRect)
@@ -132,7 +131,8 @@ while choose_players == True:
 			if player_TextRect.collidepoint(mouse):
 				if not hoover_list[index]:
 					hoover_list[index] = True
-					player_TextSurf = text_objects("number of players: " + str(index), player_largeText, (150,150,150,1))[0]
+					player_TextSurf = text_objects("number of players: " + \
+					str(index), player_largeText, (150,150,150,1))[0]
 					screen.blit(player_TextSurf, player_TextRect)
 					pygame.display.update()
 				if event.type == pygame.MOUSEBUTTONDOWN:
@@ -140,7 +140,8 @@ while choose_players == True:
 					choose_players = False
 			elif not player_TextRect.collidepoint(mouse) and hoover_list[index]:
 				hoover_list[index] = False
-				player_TextSurf = text_objects("number of players: " + str(index), player_largeText)[0]
+				player_TextSurf = text_objects("number of players: " + \
+				str(index), player_largeText)[0]
 				screen.blit(player_TextSurf, player_TextRect)
 				pygame.display.update()			
 			if event.type == KEYDOWN and event.key == (index+48):
@@ -183,13 +184,13 @@ while start_menu == True:
 			if TextRect.collidepoint(mouse):
 				if not hoover_list[index]:
 					hoover_list[index] = True
-					TextSurf = text_objects("Play map: " + str(index+1), largeText, (150,150,150,1))[0]
+					TextSurf = text_objects("Play map: " + str(index+1), largeText, \
+					(150,150,150,1))[0]
 					screen.blit(TextSurf, TextRect)
 					pygame.display.update()
 
 
 				if event.type == pygame.MOUSEBUTTONDOWN:
-					 #screen_x > mouse[0] > 0 and (screen_y + font_size)/2 > mouse[1] > (screen_y - font_size)/2:
 					start_menu = False
 					current_map = maps.maps_list[index]
 
@@ -203,10 +204,6 @@ while start_menu == True:
 			if event.type == KEYDOWN and event.key == (index+49):
 				start_menu = False
 				current_map = maps.maps_list[index]
-
-			#make_stuff(screen_x, text_y, map_nr)
-		#	else: 
-			#	text_surf_list[index].
 	pygame.display.update()
 
 
@@ -246,13 +243,13 @@ while art_menu == True:
 			if TextRect.collidepoint(mouse):
 				if not hoover_list[index]:
 					hoover_list[index] = True
-					TextSurf = text_objects("Art pack: " + str(art_packs_list[index]), largeText, (150,150,150,1))[0]
+					TextSurf = text_objects("Art pack: " + str(art_packs_list[index]), \
+					largeText, (150,150,150,1))[0]
 					screen.blit(TextSurf, TextRect)
 					pygame.display.update()
 
 
 				if event.type == pygame.MOUSEBUTTONDOWN:
-					 #screen_x > mouse[0] > 0 and (screen_y + font_size)/2 > mouse[1] > (screen_y - font_size)/2:
 					art_menu = False
 					set_art_pack(art_packs_list[index])
 					art_pack = art_packs_list[index]
@@ -274,10 +271,14 @@ import images
 # --- Fence around the map START ---
 nw_box = pymunk.Body()
 se_box = pymunk.Body()
-north_seg = pymunk.Segment(nw_box,  (-0.5, -0.5), (current_map.width + 0.5, -0.5), 0.5)
-east_seg = pymunk.Segment(se_box, (current_map.width + 0.5, current_map.height + 0.5),(current_map.width + 0.5, -0.5), 0.5)
-south_seg = pymunk.Segment(se_box,  (current_map.width + 0.5, current_map.height + 0.5),(-0.5 , current_map.height + 0.5), 0.5)
-west_seg = pymunk.Segment(nw_box,   (-0.5, -0.5), (-0.5, current_map.height + 0.5), 0.5)
+north_seg = pymunk.Segment(nw_box,  \
+(-0.5, -0.5), (current_map.width + 0.5, -0.5), 0.5)
+east_seg = pymunk.Segment(se_box, \
+(current_map.width + 0.5, current_map.height + 0.5),(current_map.width + 0.5, -0.5), 0.5)
+south_seg = pymunk.Segment(se_box,  \
+(current_map.width + 0.5, current_map.height + 0.5),(-0.5 , current_map.height + 0.5), 0.5)
+west_seg = pymunk.Segment(nw_box,   \
+(-0.5, -0.5), (-0.5, current_map.height + 0.5), 0.5)
 north_seg.collision_type = 10
 east_seg.collision_type = 10
 south_seg.collision_type = 10
@@ -390,7 +391,8 @@ def default_pos(tile):
 
 def tank_explosion(tank_or_box, image):
 	tank_pos = tank_or_box.body.position
-	exp = gameobjects.GameVisibleObject(tank_pos[0] , tank_pos[1], pygame.transform.scale(image, (image.get_height()*images.IM_SCALE, image.get_width()*images.IM_SCALE)))
+	exp = gameobjects.GameVisibleObject(tank_pos[0] , tank_pos[1], pygame.transform.scale(image, \
+	(image.get_height()*images.IM_SCALE, image.get_width()*images.IM_SCALE)))
 	exp_list.append(exp)
 	exp_start = time.time()
 	exp_time.append(exp_start)
@@ -415,12 +417,15 @@ def missile_hit(space, arb):
 	return 1
 
 def tank_hit(space, arb):
-	if not arb.shapes[1].parent == arb.shapes[0].parent.tank and not arb.shapes[1].parent.is_protected:
+	if not arb.shapes[1].parent == arb.shapes[0].parent.tank and not \
+	arb.shapes[1].parent.is_protected:
 		arb.shapes[1].parent.hp -= 1
-		if arb.shapes[0].parent.tank.powerup and arb.shapes[0].parent.tank.powerup == gameobjects.Powerup.sticky_ammo:
+		if arb.shapes[0].parent.tank.powerup and \
+		arb.shapes[0].parent.tank.powerup == gameobjects.Powerup.sticky_ammo:
 			arb.shapes[1].parent.powerup = gameobjects.Powerup.speed_down
 			arb.shapes[1].parent.activate()
-		if arb.shapes[0].parent.tank.powerup and arb.shapes[0].parent.tank.powerup == gameobjects.Powerup.damage_up:
+		if arb.shapes[0].parent.tank.powerup and \
+		arb.shapes[0].parent.tank.powerup == gameobjects.Powerup.damage_up:
 			arb.shapes[1].parent.hp -= 1
 		if arb.shapes[1].parent.hp == 1:
 			tank_exp_list.append(tank_explosion(arb.shapes[1].parent, images.small_explosion))
@@ -429,11 +434,11 @@ def tank_hit(space, arb):
 			arb.shapes[0].parent.tank.kills_increment(arb.shapes[1].parent)
 			if arb.shapes[1].parent.powerup:
 				arb.shapes[1].parent.deactivate()
-			#arb.shapes[1].parent.score_red()
 			global current_map
 			for index in range(len(tanks_list)):
 				if 	tanks_list[index].hp == 0:
-					player_dead = gameobjects.GameVisibleObject(current_map.width/2,current_map.height/2 , images.was_killed[index])
+					player_dead = gameobjects.GameVisibleObject( \
+					current_map.width/2, current_map.height/2, images.was_killed[index])
 					dead_start_list.append(time.time())
 					game_objects_list.append(player_dead)
 					text_list.append(player_dead)
@@ -447,7 +452,8 @@ def tank_hit(space, arb):
 			arb.shapes[1].parent.body.angle = arb.shapes[1].parent.start_orientation
 			arb.shapes[1].parent.hp = 2
 			arb.shapes[1].parent.maximum_speed = arb.shapes[1].parent.default_max_speed
-	if not arb.shapes[1].parent == arb.shapes[0].parent.tank and arb.shapes[0].parent in game_objects_list:
+	if not arb.shapes[1].parent == arb.shapes[0].parent.tank and \
+	arb.shapes[0].parent in game_objects_list:
 		space.add_post_step_callback(space.remove, arb.shapes[0], arb.shapes[0].body)
 		game_objects_list.remove(arb.shapes[0].parent)
 	return 1 
@@ -477,10 +483,10 @@ def tank_portal(space, arb):
 		else:
 			delta_x = -1
 
-		arb.shapes[0].parent.body.position = pymunk.Vec2d(portal.x_pos+delta_x, portal.y_pos+delta_y)
+		arb.shapes[0].parent.body.position = \
+		pymunk.Vec2d(portal.x_pos+delta_x, portal.y_pos+delta_y)
 		arb.shapes[0].parent.is_portal_cd = True
 
-		#tank.portal_time = 0
 	return 1
 
 def other_hit(space, arb):
@@ -509,13 +515,9 @@ exp_start = 0
 start = 0
 skip_update = 0
 score_text = pygame.font.SysFont(text_font, 30)
-#tab_text = pygame.font.SysFont("Arial", 40)
 paused = False
 counter_index = 0
 screen_x = current_map.width*images.TILE_SIZE
-#tab_overlay = pygame.draw.rect(screen, (0,0,0), ((0,0), (screen_x,screen_y)), 1)
-#tab_x = 100*images.IM_SCALE
-#tab_y  = 100 * images.IM_SCALE
 while running:
 	# --- SOUND ---
 	if not pygame.mixer.music.get_busy():
@@ -531,7 +533,8 @@ while running:
 		if players > 0:	
 			if event.type == KEYDOWN and event.key == K_p:
 				paused = True
-				game_paused = gameobjects.GameVisibleObject(current_map.width/2,current_map.height/2 , images.pause)
+				game_paused = gameobjects.GameVisibleObject(\
+				current_map.width/2,current_map.height/2 , images.pause)
 				game_objects_list.append(game_paused)
 			if event.type == KEYDOWN and event.key == K_UP:
 				gameobjects.Tank.accelerate(tanks_list[0])
@@ -550,9 +553,9 @@ while running:
 			elif event.type == KEYUP and event.key == K_RIGHT:
 				gameobjects.Tank.stop_turning(tanks_list[0])
 			if event.type == KEYDOWN and event.key == K_RETURN:
-				#if not tanks_list[0].start or time.time() > tanks_list[0].start + 2:
 				if tanks_list[0].is_overheated:
-					player_dead = gameobjects.GameVisibleObject(current_map.width/2,current_map.height/2 , images.died_to_oh[0])
+					player_dead = gameobjects.GameVisibleObject(\
+					current_map.width/2,current_map.height/2 , images.died_to_oh[0])
 					dead_start_list.append(time.time())
 					game_objects_list.append(player_dead)
 					text_list.append(player_dead)
@@ -578,20 +581,14 @@ while running:
 				gameobjects.Tank.stop_turning(tanks_list[1])
 			if event.type == KEYDOWN and event.key == K_SPACE:
 				if tanks_list[1].is_overheated:
-					player_dead = gameobjects.GameVisibleObject(current_map.width/2,current_map.height/2 , images.died_to_oh[1])
+					player_dead = gameobjects.GameVisibleObject(\
+					current_map.width/2,current_map.height/2 , images.died_to_oh[1])
 					dead_start_list.append(time.time())
 					game_objects_list.append(player_dead)
 					text_list.append(player_dead)
 					if tanks_list[1].powerup:
 						tanks_list[1].deactivate()
 				game_objects_list.append(gameobjects.Tank.shoot(tanks_list[1], space)[0])
-
-	#		if event.type == KEYDOWN and event.key == K_SPACE:
-	#			screen2 = screen
-	#			screen = pygame.display.set_mode((1000, 1000),RESIZABLE)
-	#			pygame.transform.scale(screen2, (1000, 1000), screen)
-	#			pygame.display.flip()
-
 
 	for tank in tanks_list:
 		if tank.hp == 2 and not tank.hp_vis[0] in game_objects_list:
@@ -607,9 +604,7 @@ while running:
 		game_objects_list.append(text_count_list[counter_index])
 		counter_index += 1
 	counter_index = 0
-
-
-			
+		
 
 	if tank_exp_list and tank_exp_list[0]():
 		tank_exp_list.pop(0)
@@ -624,17 +619,6 @@ while running:
 			tank.is_protected = False
 		if tank.powerup and tank.powerup_timer + 10 < time.time():
 			tank.deactivate()
-
-		#player_largeText = pygame.font.Font(text_font, int(font_size*0.6))
-		#player_TextSurf, player_TextRect = text_objects("number of players: " + str(players), player_largeText)
-		#player_TextRect.center = ((screen_x/2), text_y)
-
-				
-		#score_rect = text_objects(str(tank.score), score_text)[1]
-		#score_surf_list.append(score_surf)
-		#screen.blit(score_surf, score_rect)  #, (tank.x_pos - 0.2*images.IM_SCALE, tank.y_pos - 0.2*images.IM_SCALE))
-		#score_surf = score_text.render(str(tank.score), True, (255,255,255,1))
-		#screen.blit(score_surf, (1,2))
 
 	if dead_start_list and time.time() > dead_start_list[0] + 1:
 		game_objects_list.remove(text_list.pop(0))
@@ -669,11 +653,9 @@ while running:
 			tanks_list[i].maximum_speed = tanks_list[i].default_max_speed
 		if i < len(tanks_list)-players:
 			ai.SimpleAi.decide(ais[i])
-		if tanks_list[i].is_powered_up and tanks_list[i].powerup and tanks_list[i].powerup_timer and tanks_list[i].powerup_timer+10 < time.time():
+		if tanks_list[i].is_powered_up and tanks_list[i].powerup and \
+		tanks_list[i].powerup_timer and tanks_list[i].powerup_timer+10 < time.time():
 			tanks_list[i].deactivate()
-			#tanks_list[i].is_powered_up = False
-			#tanks_list[i].powerup = None
-			#powerupish = gameobjects.Powerup(0.5, 1.5)
 	#   Update object that depends on an other object position (for instance a flag)
 	for obj in game_objects_list:
 	  obj.post_update()
@@ -700,6 +682,7 @@ while running:
 				paused = False
 				game_objects_list.remove(game_paused)
 
+#-------------- End of Main Loop------------------
 
 Win_Screen = True
 text_y = 100
@@ -710,9 +693,9 @@ screen.blit(images.overlay, rectangle)
 player_largeText = pygame.font.Font(text_font, font_size)
 
 for tank in tanks_list:
-	
-	player_TextSurf, player_TextRect = text_objects("Player " + str(tanks_list.index(tank)+1) + " score: " + \
-		str(tank.score), player_largeText, tanks_color_list[tanks_list.index(tank)])
+	player_TextSurf, player_TextRect = text_objects("Player " + \
+	str(tanks_list.index(tank)+1) + " score: " + \
+	str(tank.score), player_largeText, tanks_color_list[tanks_list.index(tank)])
 	player_TextRect.center = ((screen_x/2), text_y)
 	player_text_surf_list.append(player_TextSurf)
 	player_text_rect_list.append(player_TextRect)
@@ -732,18 +715,17 @@ while Win_Screen:
 
 
 screen.fill((55,71,79,1))
-
 text_y = 200
-font_size = 100
+font_size = 150
 player_largeText = pygame.font.Font(text_font, font_size)
 player_TextSurf, player_TextRect = text_objects("Frågor?", player_largeText)
 player_TextRect.center = ((screen_x/2), text_y)
 screen.blit(player_TextSurf, player_TextRect)
-
-
 questions = True
 while questions:
 	for event in pygame.event.get():
 		if event.type == QUIT or (event.type == KEYDOWN and event.key == K_ESCAPE):
 			questions = False
 	pygame.display.update()
+
+

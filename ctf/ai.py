@@ -152,12 +152,15 @@ class SimpleAi(Ai):
     
     if not self.tank.is_portal_cd:
       obj = self.get_object_in_direction(5, 0)
-      if (hasattr(obj, 'boxmodel')  and (obj.boxmodel == boxmodels.portal_n or obj.boxmodel == boxmodels.portal_s or obj.boxmodel == boxmodels.portal_e or obj.boxmodel == boxmodels.portal_w)):
+      if (hasattr(obj, 'boxmodel')  and (obj.boxmodel == boxmodels.portal_n or \
+      obj.boxmodel == boxmodels.portal_s or obj.boxmodel == boxmodels.portal_e \
+      or obj.boxmodel == boxmodels.portal_w)):
         self.tank.accelerate 
 
     # Test if the tank is blocked
     
-    if( (self.last_position - self.tank.body.position).get_length() < 0.01 and math.cos(self.tank.body.angle - self.last_angle) > 0.995 ):
+    if( (self.last_position - self.tank.body.position).get_length() < 0.01 \
+    and math.cos(self.tank.body.angle - self.last_angle) > 0.995 ):
       self.no_move_timeout += 1
     else:
       self.no_move_timeout = 0
@@ -195,7 +198,11 @@ class SimpleAi(Ai):
       #
       # Check that there is no obstacle in front. Or if there is an obstacle that it is a box that can be moved.
       #
-      if(not self.should_turn and (not self.has_object_in_direction(0.5, 0) or (hasattr(obj, 'boxmodel')  and (obj.boxmodel == boxmodels.portal_n or obj.boxmodel == boxmodels.portal_s or obj.boxmodel == boxmodels.portal_e or obj.boxmodel == boxmodels.portal_w)) or (obj != None and self.is_object_movable(obj) and not self.is_object_tank(obj) ))):
+      if(not self.should_turn and (not self.has_object_in_direction(0.5, 0) or \
+      (hasattr(obj, 'boxmodel')  and (obj.boxmodel == boxmodels.portal_n or \
+      obj.boxmodel == boxmodels.portal_s or \
+      obj.boxmodel == boxmodels.portal_e or obj.boxmodel == boxmodels.portal_w)) \
+       or (obj != None and self.is_object_movable(obj) and not self.is_object_tank(obj) ))):
         self.tank.accelerate()
       else:
         self.should_turn = False
@@ -236,7 +243,9 @@ class SimpleAi(Ai):
           self.turn_target = current_opposite_direction
         
         # Turn left or right
-        if( (self.turn_target > current_direction or (self.turn_target == 0 and current_direction == 3) ) and not (self.turn_target == 3 and current_direction == 0 ) ):
+        if( (self.turn_target > current_direction or (self.turn_target == 0 \
+        and current_direction == 3) ) and not (self.turn_target == 3 and \
+        current_direction == 0 ) ):
           self.turn_left = False
           self.tank.turn_right()
         else:
@@ -248,31 +257,7 @@ class SimpleAi(Ai):
       self.tank.turn_left()
     else:
       self.tank.turn_right()
-      """
-    if self.get_object_in_direction( 5, self.tank.body.angle) and self.is_object_tank(self.get_object_in_direction( 5, self.tank.body.angle)):
-      if not start or time.time() > start + 1:
-        m = gameobjects.Tank.shoot(self, space)
-        missile_list.append(m)
-        game_objects_list.append(m)
-        start = time.time()
-    counter = 0
-    if missile_list:
-      if missile_hit(m):  
-        for i in tanks_list:
-          if tank_hit(m, i) and counter!=0:
-            exp_list.append(gameobjects.GameVisibleObject(i.body.position[0], i.body.position[1], images.explosion))
-            game_objects_list.append(exp_list[-1])
-            exp_time.append(time.time())
-            i.body.position= i.start_position
-          counter += 1
-        missile_list.remove(m)
-        game_objects_list.remove(m)
-        m.body.position = pm.Vec2d(-100, -100)
-    if exp_time and time.time() > exp_time[0] + 1 and exp_list:  
-      game_objects_list.remove(exp_list[0])
-      exp_list.pop(0)
-      exp_time.pop(0)
-      """
+
   # This function return the position of the point of interest
   #  Which is the flag or the base
   #

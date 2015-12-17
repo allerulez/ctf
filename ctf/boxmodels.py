@@ -20,8 +20,7 @@ metalbox = BoxModel(images.metalbox, True, False)
 # Define the rock box (ie wall) as non movable and indestructable
 rockbox  = BoxModel(images.rockbox,  False, False)
 
-rockbox_mov = BoxModel(images.rockbox, True, True)
-
+# Define the portals as non movable, indestructible "boxes" with a specific orientation
 portal_n = BoxModel(images.portal, False, False, 180)
 portal_s = BoxModel(images.portal, False, False, 0)
 portal_e = BoxModel(images.portal, False, False, 90)
@@ -34,6 +33,7 @@ portal_w = BoxModel(images.portal, False, False, 270)
 #   1 is a rockbox
 #   2 is a woodbox
 #   3 is a metalbox
+#   5 through 9 are portals with different orientation 
 def get_model(type):
   if(type == 1):
     return rockbox
@@ -41,8 +41,6 @@ def get_model(type):
     return woodbox
   elif(type == 3):
     return metalbox
-  elif(type == 4):
-    return rockbox_mov
   elif(type == 5):
     return portal_n
   elif(type == 7):
