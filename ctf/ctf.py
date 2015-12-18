@@ -1,8 +1,6 @@
 import pygame
 import time	
 import math
-import os
-import argparse
 import random
 from pygame.locals import *
 from pygame.color import *
@@ -331,7 +329,7 @@ for x in range(0, current_map.width):
 			elif box_type == 1:				
 				box.shape.collision_type = 10
 				box.hp = 3
-			elif box_type != 6 and box_type in range(5, 9):
+			elif box_type != 6 and box_type in range(5, 10):
 				box.shape.collision_type = 4
 				points  = [[-0, -0], [-0, 0],[0, 0],[0, -0]]
 				box.shape = pymunk.Poly(box.body, points)
@@ -483,6 +481,7 @@ def tank_portal(space, arb):
 		else:
 			delta_x = -1
 
+		arb.shapes[0].parent.portal_time = time.time()
 		arb.shapes[0].parent.body.position = \
 		pymunk.Vec2d(portal.x_pos+delta_x, portal.y_pos+delta_y)
 		arb.shapes[0].parent.is_portal_cd = True
