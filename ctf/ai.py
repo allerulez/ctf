@@ -149,7 +149,8 @@ class SimpleAi(Ai):
           self.game_objects_list.append(m)
     
     self.last_shot -= 1
-    
+
+    # check if we should enter a portal
     if not self.tank.is_portal_cd:
       obj = self.get_object_in_direction(5, 0)
       if (hasattr(obj, 'boxmodel')  and (obj.boxmodel == boxmodels.portal_n or \

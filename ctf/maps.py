@@ -1,7 +1,7 @@
 import images
 import pygame
 
-
+# Define a list to contain all available maps
 maps_list = []
 
 # define a map
