@@ -140,7 +140,7 @@ class Tank(GamePhysicsObject):
     sprite = pygame.transform.scale(sprite, (int(images.TILE_SIZE//1.7), \
     int(images.TILE_SIZE//1.7)))
     GamePhysicsObject.__init__(self, x, y, orientation, sprite, space, True)
-    # Define variable used to apply motion to the tanks
+    # Define all properties related to a Tank object.
     self.acceleration         = 0.0
     self.velocity             = 0.0
     self.angular_acceleration = 0.0
@@ -251,12 +251,13 @@ class Tank(GamePhysicsObject):
   
 
   def post_update(self):
-    # If the tank carries the flag, then update the positon of the flag
+    # If the tank carries the flag, then update the positon of the flag.
     if(self.flag != None):
       self.flag.x           = self.body.position[0]
       self.flag.y           = self.body.position[1]
       self.flag.orientation = -math.degrees(self.body.angle)
 
+    # Handles the displaying of the overheat overlay for a tank.
     if self.is_overheated:
       self.oh.x           = self.body.position[0]
       self.oh.y           = self.body.position[1]
@@ -264,6 +265,7 @@ class Tank(GamePhysicsObject):
       self.oh.x           = 1337
       self.oh.y           = 1337 
 
+    # Handles the displaying of the shield overlay for a tank.
     if self.is_protected:
       self.sp.x           = self.body.position[0]
       self.sp.y           = self.body.position[1]
@@ -285,7 +287,8 @@ class Tank(GamePhysicsObject):
         self.is_on_tank     = True
         self.maximum_speed  = 3
 
-
+  # Call this function to try to grab a powerup.
+  # If it is close to the current tank, then the current tank will get said powerup.
   def try_grab_powerup(self, powerup):
     powerup_pos = pymunk.Vec2d(powerup.x_pos, powerup.y_pos)
     if not self.is_powered_up:
@@ -310,12 +313,12 @@ class Tank(GamePhysicsObject):
     self.is_powered_up = False
 
 
-  # Check if the current tank has won (if it is has the flag and it is close to its start position)
+  # Check if the current tank has captured the flag (if it has the flag and it is close to its start position)
   def has_won(self):
     return self.flag != None and (self.start_position - self.body.position).length < 0.2
 
 
-  # Call this function to shoot forward (current implementation does nothing ! you need to implement it yourself)
+  # Call this function to shoot.
   def shoot(self, space):
     if self.powerup and self.powerup == Powerup.sticky_ammo: 
       missile = Missile(self.body.position[0], self.body.position[1], \
@@ -379,12 +382,6 @@ class GameVisibleObject(GameObject):
     return self.orientation
 
 
-class Tab(GameVisibleObject):
-  def __init__(self, x, y):
-    GameVisibleObject.__init__(self, x, y,  pygame.transform.scale(images.tab, \
-    (images.tab.get_width() * images.IM_SCALE, images.tab.get_height() * images.IM_SCALE)))
-
-
 #
 # This class extends GameVisibleObject for representing flags.
 #
@@ -403,6 +400,7 @@ class Flag(GameVisibleObject):
 
 class Powerup(GameVisibleObject):
   def __init__(self, x, y, powerup_kind= None):
+  	# Define the properties of a pwerup object
     self.type_img = images.load_image('powerup.png')
     self.sprite = pygame.transform.scale(self.type_img, (images.TILE_SIZE, images.TILE_SIZE))
     self.x_pos = x
@@ -478,6 +476,7 @@ class Powerup(GameVisibleObject):
 
 class HP(GameVisibleObject):
   def __init__(self, x, y):
+  	# Displays the HP of a tank visually.
     GameVisibleObject.__init__(self, x, y,  pygame.transform.scale(images.hp, \
     (10*images.IM_SCALE,10*images.IM_SCALE)))
 
@@ -486,7 +485,7 @@ class HP(GameVisibleObject):
 class Missile(GamePhysicsObject):
   def __init__(self, x, y, orientation, sprite, space, tank):
     GamePhysicsObject.__init__(self, x, y, orientation, sprite, space, True)
-    # Define variable used to apply motion to the missile
+    # Define the properties of a missile object
     self.tank                 = tank
     self.orientation          = orientation
     self.acceleration         = 20.0

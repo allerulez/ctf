@@ -41,8 +41,9 @@ tanks     = [load_image(str(pack)+'/tank_orange.png'), load_image(str(pack)+'/ta
             load_image(str(pack)+'/tank_white.png'), load_image(str(pack)+'/tank_yellow.png'), \
             load_image(str(pack)+'/tank_red.png'), load_image(str(pack)+'/tank_gray.png')]
 
-
+# Image of a sticky missile
 sticky_missile = load_image('standard/sticky_missile.png')
+
 # Image of overheat
 overheat = load_image('overheat.png')
 
@@ -67,15 +68,13 @@ spawn_protect = load_image('spawn_protect.png')
 #Image of overlay
 overlay	  = load_image('overlay.png')
 
-# Image of Tab
-tab = load_image('overlay/overlay.png')
-
+# List of images saying a player has died
 was_killed = [load_image('kills/player1_was_killed.png'), load_image('kills/player2_was_killed.png'), \
               load_image('kills/player3_was_killed.png'), load_image('kills/player4_was_killed.png'), \
               load_image('kills/player5_was_killed.png'), load_image('kills/player6_was_killed.png')]
 
+# List of images saying a player died to OH
 died_to_oh = [load_image('kills/player1_died_to_oh.png'), load_image('kills/player2_died_to_oh.png')]
-# List of image of tanks of different colors
 
 
 # List of image of bases corresponding to the color of each tank

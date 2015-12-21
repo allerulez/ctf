@@ -8,18 +8,18 @@ import pymunk
 
 #----- Initialisation -----#
 
-#-- Initialise the display
+#-- Initialise the display.
 pygame.init()
-pygame.display.set_mode((600,800), RESIZABLE)
+pygame.display.set_mode((600,800))
 
-#-- Initialise the clock
+#-- Initialise the clock.
 clock = pygame.time.Clock()
 
-#-- Initialise the physics engine
+#-- Initialise the physics engine.
 space = pymunk.Space()
 space.gravity = (0.0,  0.0)
 
-#-- Import from the ctf framework
+#-- Import from the ctf framework.
 import ai
 import boxmodels
 import gameobjects
@@ -28,8 +28,7 @@ import maps
 
 #-- Constants
 framerate = 60
-#-- Variables
-#   List of all game objects
+#-- Variables and Lists
 game_objects_list   = []
 game_objects_def_pos_list = []
 tanks_list          = []
@@ -58,10 +57,11 @@ art_packs_list 		= ["standard", "potato"]
 art_pack 			= "standard"
 players 			= 0
 win_score			= 10
-#   Define the current level
+# Define the current game screen.
 pygame.display.set_caption('Capture the Flag')
 screen_x = 800
 screen_y = 800
+# Define variables related to text on screen.
 font_size = 115
 art_font_size = 70
 text_font = 'freesansbold.ttf'
@@ -71,8 +71,16 @@ screen = pygame.display.set_mode((screen_x,screen_y))
 score_font_size = 25
 player_score_text = pygame.font.Font(text_font, score_font_size)
 
+	# --- SOUND ---
+pygame.mixer.init()
+pygame.mixer.music.load("data/Sounds/moose.wav")
+pygame.mixer.music.play()
+pygame.mixer.music.set_volume(0.3)
 
+# Not currently used function to handle the selection of alternative art.
+"""
 def set_art_pack(pack):
+
 	pack_file = open("data/pack_file.txt", "w")
 	pack_file.write(str(pack))
 	pack_file.close()
@@ -81,13 +89,17 @@ def set_art_pack(pack):
 		pass
 	else:
 		art_pack = str(pack)
+"""
 
 
 def text_objects(text, font, color = (255,255,255, 1)):
+    """ Creates a Surface object for a text """
     textSurface = font.render(text, True, color)
     return textSurface, textSurface.get_rect()
 
+# ------- Player selection START -----------
 
+# Loops over and creates a text for each potential player.
 for i in range(3):
 	player_largeText = pygame.font.Font(text_font, int(font_size*0.6))
 	player_TextSurf, player_TextRect = \
@@ -99,22 +111,13 @@ for i in range(3):
 	players += 1
 	screen.blit(player_TextSurf, player_TextRect)
 
+# Resets variables for future use.
 players = 1
 text_y = 115
+
+
+# Player selection loop
 choose_players = True
-
-
-for player_TextRect in player_text_rect_list:
-	index = player_text_rect_list.index(player_TextRect)
-	mouse = pygame.mouse.get_pos()
-	screen.blit(player_text_surf_list[index], player_text_rect_list[index])
-	# --- SOUND ---
-pygame.mixer.init()
-pygame.mixer.music.load("data/Sounds/moose.wav")
-pygame.mixer.music.play()
-pygame.mixer.music.set_volume(0.3)
-
-
 while choose_players == True:
 	
 
@@ -147,8 +150,17 @@ while choose_players == True:
 				choose_players = False
 	pygame.display.update()
 
+
+
+# ----------- Player selection END -----------
+
+# Reset the screen and mouse hoover variables.
 screen.fill((0,0,0,1))
 hoover_list 		= [False, False, False, False, False]
+
+# --------------- Map selection START -----------------------
+
+# Loops over and creates a text for each potential map.
 
 map_nr = 1
 for i in maps.maps_list:
@@ -162,12 +174,8 @@ for i in maps.maps_list:
 	screen.blit(TextSurf, TextRect)
 map_nr = 1
 
-for TextRect in text_rect_list:
-	index = text_rect_list.index(TextRect)
-	mouse = pygame.mouse.get_pos()
-	screen.blit(text_surf_list[index], text_rect_list[index])
+# Map selection loop
 start_menu = True
-
 while start_menu == True:
 	
 
@@ -176,6 +184,7 @@ while start_menu == True:
 			start_menu = False
 			pygame.quit()
 			quit()
+		# Handles mouse hoover events.
 		for TextRect in text_rect_list:
 			index = text_rect_list.index(TextRect)
 			mouse = pygame.mouse.get_pos()
@@ -204,8 +213,11 @@ while start_menu == True:
 				current_map = maps.maps_list[index]
 	pygame.display.update()
 
+# --------------- Map selection END ----------------
 
+# --------------- Art selection START --------------
 
+# Not currently used code related to selection of art.
 """
 screen.fill((0,0,0,1))
 hoover_list 		= [False, False, False, False, False]
@@ -262,11 +274,14 @@ while art_menu == True:
 
 screen.fill((0,0,0,1))
 """
-#-- Resize the screen to the size of the current level
+#-------------- Art Selection END --------------------
+
+# Resize the screen to the size of the current level.
 screen = pygame.display.set_mode(current_map.rect().size)
+# Images.py is imported here to enable the selection of art, something which is urrently not used.
 import images
 
-# --- Fence around the map START ---
+# ----------- Fence around the map START --------------
 nw_box = pymunk.Body()
 se_box = pymunk.Body()
 north_seg = pymunk.Segment(nw_box,  \
@@ -284,6 +299,7 @@ west_seg.collision_type = 10
 space.add(north_seg, east_seg, south_seg, west_seg)
 # --- Fence around the map END ---
 
+# ------------- Screen background START ---------------
 background = pygame.Surface(screen.get_size())
 #   Copy the grass tile all over the level area
 #   The map has dimension a width of "current_map.width" and a height of "current_map.height"
@@ -297,13 +313,17 @@ for x in range(0, current_map.width):
 		grass = pygame.transform.scale(images.grass,(images.TILE_SIZE, images.TILE_SIZE))
 		background.blit(grass, (x*images.TILE_SIZE, y*images.TILE_SIZE))
 
+# ------------- Screen background END ---------------
 
-# --- Creation of objects START ---
+
+# --- Creation of gameobjects START ---
+#
+# Create the boxes on the map
+#
 #   The initial position and type of the boxes is contained in the "current_map.boxes" array,
 #   which is an array that has the size of the map, and whose cells contain the box type
 #   (0 means no box, 1 means wall, 2 means wood and 3 means steel)
 #
-#   As for the background we create two loops over the size of the map.
 #
 for x in range(0, current_map.width):
 	for y in range(0, current_map.height):
@@ -328,7 +348,6 @@ for x in range(0, current_map.width):
 				box.hp = 1
 			elif box_type == 1:				
 				box.shape.collision_type = 10
-				box.hp = 3
 			elif box_type != 6 and box_type in range(5, 10):
 				box.shape.collision_type = 4
 				points  = [[-0, -0], [-0, 0],[0, 0],[0, -0]]
@@ -372,22 +391,28 @@ for i in range(0, len(current_map.start_positions)):
 	text_count_list.append(counter_text)
 	game_objects_list.append(counter_text)	
 
-	#Add ai
+	# Add ai for all non-player tanks.
 	if i > (players-1):
 		ais.append(ai.SimpleAi(tanks_list[i], game_objects_list, tanks_list, space))
 
-# This function call creates a new flag object at coordinates x, y
+# This function call creates a new flag object at coordinates x, y.
 flag = gameobjects.Flag(current_map.flag_position[0], current_map.flag_position[1])
 game_objects_list.append(flag)
 game_objects_def_pos_list = list(game_objects_list)
 # --- Creation of objects END ---
 
 def default_pos(tile):
+	"""
+	Returns the default position for all objects on the map before the game starts
+	to make the updating of positions quicker.
+	"""
 	return tile in game_objects_def_pos_list
+
 
 # Collision handlers and functions ----START----
 
 def tank_explosion(tank_or_box, image):
+	""" Handles all explosions in-game """
 	tank_pos = tank_or_box.body.position
 	exp = gameobjects.GameVisibleObject(tank_pos[0] , tank_pos[1], pygame.transform.scale(image, \
 	(image.get_height()*images.IM_SCALE, image.get_width()*images.IM_SCALE)))
@@ -405,6 +430,7 @@ def tank_explosion(tank_or_box, image):
 	return remove_explosion
 
 def missile_hit(space, arb):
+	""" Handles the event where two missiles collide. """
 	tank_exp_list.append(tank_explosion(arb.shapes[1].parent, images.small_explosion))
 	if arb.shapes[0].parent in game_objects_list:
 			space.add_post_step_callback(space.remove, arb.shapes[0], arb.shapes[0].body)
@@ -415,6 +441,7 @@ def missile_hit(space, arb):
 	return 1
 
 def tank_hit(space, arb):
+	""" Handles the event where a missile and a tank collide. """
 	if not arb.shapes[1].parent == arb.shapes[0].parent.tank and not \
 	arb.shapes[1].parent.is_protected:
 		arb.shapes[1].parent.hp -= 1
@@ -457,6 +484,7 @@ def tank_hit(space, arb):
 	return 1 
 
 def box_hit(space, arb):
+	""" Handles the event where a missile and a wooden box collide. """
 	arb.shapes[1].parent.hp -= 1
 	if arb.shapes[1].parent.hp == 0:
 		tank_exp_list.append(tank_explosion(arb.shapes[1].parent, images.explosion))
@@ -468,6 +496,7 @@ def box_hit(space, arb):
 	return 1
 
 def tank_portal(space, arb):
+	""" Handles the event where a tank enters a portal. """
 	if not arb.shapes[0].parent.is_portal_cd:
 		portal = random.choice(portal_list)
 		delta_x = 0
@@ -489,6 +518,7 @@ def tank_portal(space, arb):
 	return 1
 
 def other_hit(space, arb):
+	""" Handles miscellaneous collision events. """
 	if arb.shapes[0].parent in game_objects_list:
 		tank_exp_list.append(tank_explosion(arb.shapes[0].parent, images.small_explosion))
 		space.add_post_step_callback(space.remove, arb.shapes[0], arb.shapes[0].body)
@@ -508,7 +538,7 @@ space.add_collision_handler(0, 4, None, other_hit)
 
 #----- Main Loop -----#
 
-#-- Control whether the game should run
+# Define variables needed in the main loop
 running = True
 exp_start = 0
 start = 0
@@ -523,18 +553,20 @@ while running:
 		pygame.mixer.music.load("data/Sounds/moose.wav")
 		pygame.mixer.music.play()
 
-	#-- Handle the events
+	#-- Handles input events
 	for event in pygame.event.get():
 		# Check if we receive a QUIT event (for instance, if the user press the
 		# close button of the window) or if the user press the escape key.
 		if event.type == QUIT or (event.type == KEYDOWN and event.key == K_ESCAPE):
 			running = False
+
+		elif event.type == KEYDOWN and event.key == K_p:
+			paused = True
+			game_paused = gameobjects.GameVisibleObject(\
+			current_map.width/2,current_map.height/2 , images.pause)
+			game_objects_list.append(game_paused)
+		# Events for human player 1
 		if players > 0:	
-			if event.type == KEYDOWN and event.key == K_p:
-				paused = True
-				game_paused = gameobjects.GameVisibleObject(\
-				current_map.width/2,current_map.height/2 , images.pause)
-				game_objects_list.append(game_paused)
 			if event.type == KEYDOWN and event.key == K_UP:
 				gameobjects.Tank.accelerate(tanks_list[0])
 			elif event.type == KEYUP and event.key == K_UP:
@@ -561,6 +593,8 @@ while running:
 					if tanks_list[0].powerup:
 						tanks_list[0].deactivate()
 				game_objects_list.append(gameobjects.Tank.shoot(tanks_list[0], space)[0])
+
+		# Events for human player 2
 		if players > 1:
 			if event.type == KEYDOWN and event.key == K_w:
 				gameobjects.Tank.accelerate(tanks_list[1])
@@ -589,6 +623,8 @@ while running:
 						tanks_list[1].deactivate()
 				game_objects_list.append(gameobjects.Tank.shoot(tanks_list[1], space)[0])
 
+
+	# Display score text for each tank currently in-game 
 	for tank in tanks_list:
 		if tank.hp == 2 and not tank.hp_vis[0] in game_objects_list:
 			game_objects_list.append(tank.hp_vis[0])
@@ -605,9 +641,12 @@ while running:
 	counter_index = 0
 		
 
+	# Removes expired explosions from the map
 	if tank_exp_list and tank_exp_list[0]():
 		tank_exp_list.pop(0)
 
+
+	# Checks various timers related to tanks
 	for tank in tanks_list:
 		if tank.is_overheated and time.time() > tank.start + 2:
 			tank.is_overheated = False
@@ -623,6 +662,8 @@ while running:
 		game_objects_list.remove(text_list.pop(0))
 		dead_start_list.pop(0)
 
+
+	# Updates all objects every fifth loop
 	if(skip_update == 0):
 	  # Loop over all the game objects and update their speed in function of their
 	  # acceleration.
@@ -636,7 +677,10 @@ while running:
 	#   Check collisions and update the objects position
 	space.step(1 / framerate)
 
-
+	# For each tank: check if they can pick up a powerup or the flag
+	# and call the decide function for each AI in play.
+	# Also check if the time has come to deactivate a powerup for each specific tank.
+	# Finally check if a tank has captured the flag. 
 	for i in range(len(tanks_list)):
 		gameobjects.Tank.try_grab_flag(tanks_list[i], flag)
 		for power in powerupish:
@@ -655,13 +699,16 @@ while running:
 		if tanks_list[i].is_powered_up and tanks_list[i].powerup and \
 		tanks_list[i].powerup_timer and tanks_list[i].powerup_timer+10 < time.time():
 			tanks_list[i].deactivate()
+
 	#   Update object that depends on an other object position (for instance a flag)
 	for obj in game_objects_list:
 	  obj.post_update()
 	#-- Update Display
 
+
 	# Display the background on the screen
 	screen.blit(background,(0,0))
+
 
 	# Update the game display of the game objects on the screen
 	for obj in game_objects_list:
@@ -669,12 +716,15 @@ while running:
 		if default_pos(obj) != obj:
 			obj.update_screen(screen)
 
+
 	#   Redisplay the entire screen (see double buffer technique)
 	pygame.display.flip()
+
 
 	#   Control the game framerate
 	clock.tick(framerate)
 
+	# A loop to handle the pausing of a game.
 	while paused:
 		for event in pygame.event.get():
 			if event.type == KEYDOWN and event.key == K_u:
@@ -683,14 +733,18 @@ while running:
 
 #-------------- End of Main Loop------------------
 
+
+#-------------- Win Screen START -----------------
+
+# Set variables needed for the final Win Screen to run.
 Win_Screen = True
 text_y = 100
 font_size = 50
-
 rectangle = pygame.draw.rect(screen, (0,0,0), ((0,0), (2000,2000)), 1)
 screen.blit(images.overlay, rectangle)
 player_largeText = pygame.font.Font(text_font, font_size)
 
+# Creates and displays text on the win screen
 for tank in tanks_list:
 	player_TextSurf, player_TextRect = text_objects("Player " + \
 	str(tanks_list.index(tank)+1) + " score: " + \
@@ -706,6 +760,8 @@ player_TextSurf, player_TextRect = text_objects("Press ESC to quit", player_larg
 player_TextRect.center = ((screen_x/2), text_y)
 screen.blit(player_TextSurf, player_TextRect)
 
+
+# Win Screen loop
 while Win_Screen:
 	for event in pygame.event.get():
 			if event.type == QUIT or (event.type == KEYDOWN and event.key == K_ESCAPE):
@@ -713,18 +769,4 @@ while Win_Screen:
 	pygame.display.update()
 
 
-screen.fill((55,71,79,1))
-text_y = 200
-font_size = 150
-player_largeText = pygame.font.Font(text_font, font_size)
-player_TextSurf, player_TextRect = text_objects("Frågor?", player_largeText)
-player_TextRect.center = ((screen_x/2), text_y)
-screen.blit(player_TextSurf, player_TextRect)
-questions = True
-while questions:
-	for event in pygame.event.get():
-		if event.type == QUIT or (event.type == KEYDOWN and event.key == K_ESCAPE):
-			questions = False
-	pygame.display.update()
-
-
+#--------------- Win Screen END ---------------
