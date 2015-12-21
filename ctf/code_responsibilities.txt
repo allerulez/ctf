@@ -1,0 +1,21 @@
+Kod som Adam Andersson har ansvarat för:
+Objekt dvs: HP, score, powerups, tanks, portals, missiles, overheat, spawn protection
+Pausemeny
+Användarmanual
+
+Kod som Aleksi Evansson har ansvarat för:
+Collision handlers och funktioner, explosions, hot seat multiplayer
+Hantering av skjutande i spelet
+Musik
+
+Kod som Ludvig Westerdahl har ansvarat för:
+Player selection, map selection, art selection och win screen.
+förbättringar av AI
+Bilder och deras implementation i spelet.
+
+
+Kod som alla ansvarar för gemensamt:
+Nya kartor i maps.py
+nya lådor i boxmodels.py
+Tutorialavsnittet i projektbeskrivningen.
+Presentation av projektet

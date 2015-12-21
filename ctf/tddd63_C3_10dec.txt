@@ -1,8 +1,0 @@
-Progress report TDDD63
-2015-12-10
-Group C3
-
-This week we have done the following:
-- Written a user manual, still needs to be updated since we've done more things after it was written
-- We've made powerups that is symbolized as a question mark on the map, when you drive over it you get one of several power-ups (or power-downs).
-- We've also implemented sound effects when a game starts, when a tank shoots and some background music

@@ -1,9 +1,0 @@
- ---FIXA IMORGON ---
- Nya tiles
- Finare tiles
- ##	Visuell explosion: en liten explosion för missilen
- ##	samt en stor när en tank/låda sprängs.
- ##	Visuell reload time, Överhettad tank
- ##	Stållådorna ska få en högre friktion
- Någon gång i framtiden: Stenlådorna ska få ett HP
- ---Mission COMPLETED ---

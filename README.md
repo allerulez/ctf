@@ -1,2 +1,0 @@
-# ctf
-Capture the Flag
